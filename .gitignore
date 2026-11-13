@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Credenciais e sessões
+.env
+.env.*
+!.env.example
+*.session
+*.session-journal
+*credentials*.json
+*secret*.json
+*token*.json
+*api_key*
+
+# Livros e arquivos grandes
+*.epub
+*.EPUB
+*.pdf
+*.zip
+
+# Dados e relatórios gerados
+output/
+cache/
+backup_json/
+
+# Resultados temporários
+teste_*
+epubs_*.txt
+epubs_*.csv
+novelupdates_candidatos.json
+novelupdates_coleta.txt
+novelupdates_serper_cache.json
+
+# Backups
+*.bak
