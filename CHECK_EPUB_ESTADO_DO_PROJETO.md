@@ -1,6 +1,6 @@
 # Check EPUB — estado consolidado
 
-Atualizado: 2026-11-13 13:36
+Atualizado: 2026-11-13 14:38
 
 ## Objetivo e sequência
 
@@ -13,20 +13,20 @@ Atualizado: 2026-11-13 13:36
 
 - Catálogo principal (somente leitura): `output/telegram_midias_apenas_epub_origens_v3_ptbr.csv` (5118 registros).
 - Candidatos anteriores (somente leitura): `novelupdates_candidatos.json` (20 registros).
-- Varredura local: `output/check_epub_varredura.json` (7460 arquivos).
-- Agrupamentos e evidências: `output/check_epub_obras.json` (3163 grupos).
+- Varredura local: `output/check_epub_varredura.json` (3730 arquivos).
+- Agrupamentos e evidências: `output/check_epub_obras.json` (3030 grupos).
 - Painel offline: `output/relatorio_telegram.html`.
 - Backup do painel: `output/relatorio_telegram.html.bak_check_epub`.
 
 ## Resumo desta execução
 
-- EPUBs locais varridos: **7460**.
-- Agrupamentos conservadores: **3163**.
-- Grupos de duplicatas com evidência (EPUBs baixados): **397**.
+- EPUBs locais varridos: **3730**.
+- Agrupamentos conservadores: **3030**.
+- Grupos de duplicatas com evidência (EPUBs baixados): **427**.
 - Grupos de possíveis duplicatas entre os já identificados no catálogo (título+autor): **95**.
-- Grupos baixados sem identificação confirmada (inclusive com URL NU ainda não validada): **3163**.
+- Grupos baixados sem identificação confirmada (inclusive com URL NU ainda não validada): **3030**.
 - Problemas comprovadamente sem solução: **não apurados**; requer histórico completo das ações e alternativas.
-- EPUBs com falha de leitura: **3731**.
+- EPUBs com falha de leitura: **1**.
 
 ## Regras e limitações
 
