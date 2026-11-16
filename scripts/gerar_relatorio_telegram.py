@@ -158,7 +158,7 @@ h1{font-size:30px;letter-spacing:-1px;margin:9px 0}
 .sub{color:#78869b;margin:0 0 28px}
 .grid{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
   gap:15px;
 }
 .card,.panel{
@@ -304,6 +304,11 @@ td{max-width:380px;overflow-wrap:anywhere}
     </div>
   </div>
   <div class="panel">
+    <h2>Nacionalidades das obras revisadas</h2>
+    <p class="muted" id="verifiedOriginsSummary"></p>
+    <div id="verifiedOrigins"></div>
+  </div>
+  <div class="panel">
     <h2>Cherrymist</h2>
     <div class="notice">
       Associação não verificada por catálogo.
@@ -322,14 +327,14 @@ td{max-width:380px;overflow-wrap:anywhere}
         placeholder="Buscar título, arquivo ou autor"
         oninput="filterRecords()">
       <select id="status" onchange="filterRecords()">
-        <option value="">Todos os status</option>
+        <option value="">Todos os status do catálogo</option>
         <option value="identificado">Identificados</option>
         <option value="revisar">Para revisão</option>
         <option value="nao_encontrado">Não encontrados</option>
         <option value="outro">Outros</option>
       </select>
-      <select id="language" onchange="filterRecords()">
-        <option value="">Todas as origens</option>
+      <select id="nationality" onchange="filterRecords()">
+        <option value="">Todas as nacionalidades originais verificadas</option>
       </select>
       <button class="action" onclick="exportCSV()">
         Exportar CSV filtrado
@@ -339,7 +344,9 @@ td{max-width:380px;overflow-wrap:anywhere}
       <table>
         <thead><tr>
           <th>Arquivo / obra</th><th>Autor</th>
-          <th>Origem</th><th>Status</th><th>ID</th>
+          <th>Nacionalidade da obra</th><th>Protagonistas</th>
+          <th>Verificadas</th><th>Encontrada em</th>
+          <th>Status no catálogo</th><th>ID</th><th>Referência</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -404,7 +411,8 @@ $('cards').innerHTML=
   metric('EPUBs analisados',total)+
   metric('Identificados',counts.identificado)+
   metric('Para revisão',counts.revisar)+
-  metric('Não encontrados',counts.nao_encontrado);
+  metric('Não encontrados',counts.nao_encontrado)+
+  metric('Obras com nacionalidade confirmada',DATA.obra_origins?.work_count||0);
 $('statusbar').innerHTML=
   '<span style="width:'+(100*(counts.identificado||0)/(total||1))+
   '%;background:#27a477"></span>'+
@@ -418,19 +426,29 @@ $('languages').innerHTML=
 $('inventory').innerHTML=
   Object.entries(DATA.inventory).map(([k,v])=>stat(k,v)).join('')||
   '<p class="muted">Inventário não localizado.</p>';
-const langs=[...new Set(DATA.records.map(r=>r.idioma||r.pais)
-  .filter(Boolean))].sort();
-$('language').innerHTML+=langs.map(x=>
-  '<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+const obraOrigins=DATA.obra_origins||{work_count:0,epub_count:0,countries:{}};
+$('verifiedOriginsSummary').textContent=
+  fmt(obraOrigins.work_count)+' obras · '+fmt(obraOrigins.epub_count)+
+  ' EPUBs associados';
+$('verifiedOrigins').innerHTML=
+  Object.entries(obraOrigins.countries).sort((a,b)=>b[1]-a[1])
+  .map(([k,v])=>stat(k,v)).join('')||
+  '<p class="muted">Nenhuma nacionalidade revisada.</p>';
+const nationalities=Object.entries(DATA.obra_origins?.countries||{})
+  .sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+$('nationality').innerHTML+=nationalities.map(([country,count])=>
+  '<option value="'+esc(country)+'">'+esc(country)+' ('+fmt(count)+' obras)</option>').join('');
 
 function filterRecords(){
   const q=$('search').value.trim().toLocaleLowerCase();
-  const s=$('status').value,l=$('language').value;
+  const s=$('status').value,n=$('nationality').value;
   filtered=DATA.records.filter(r=>
-    (!q||[r.nome,r.titulo,r.autor,r.catalogo]
+    (!q||[r.nome,r.titulo,r.autor,r.catalogo,r.obra_verificada,
+      r.autor_obra,r.nacionalidade_obra,r.localizada_em,
+      (r.protagonistas_obra||[]).join(' ')]
       .some(v=>String(v).toLocaleLowerCase().includes(q)))&&
     (!s||r.status===s)&&
-    (!l||(r.idioma||r.pais)===l)
+    (!n||r.nacionalidade_obra===n)
   );
   page=0;render();
 }
@@ -438,13 +456,20 @@ function render(){
   const start=page*pageSize;
   const rows=filtered.slice(start,start+pageSize);
   $('tbody').innerHTML=rows.map(r=>
-    '<tr><td><strong>'+esc(r.nome)+'</strong>'+
+    '<tr><td><strong>'+esc(r.obra_verificada||r.nome)+'</strong>'+
+    (r.obra_verificada&&r.nome?'<div class="muted">'+esc(r.nome)+'</div>':'')+
     (r.catalogo?'<div class="muted">'+esc(r.catalogo)+'</div>':'')+
-    '</td><td>'+esc(r.autor||'—')+
-    '</td><td>'+esc(r.idioma||r.pais||'—')+
+    '</td><td>'+esc(r.autor_obra||r.autor||'—')+
+    '</td><td>'+esc(r.nacionalidade_obra||'—')+
+    '</td><td>'+esc((r.protagonistas_obra||[]).join(' / ')||'—')+
+    '</td><td>'+esc(formatVerification(r.verificadas))+
+    '</td><td>'+esc(r.localizada_em||'Não encontrada no catálogo')+
     '</td><td><span class="pill '+r.status+'">'+
-    labels[r.status]+'</span></td><td>'+esc(r.id)+'</td></tr>'
-  ).join('')||'<tr><td colspan="5">Nenhum resultado</td></tr>';
+    labels[r.status]+'</span></td><td>'+esc(r.id)+'</td><td>'+
+    (r.referencia_obra?'<a href="'+esc(r.referencia_obra)+
+      '" target="_blank" rel="noopener noreferrer">Abrir</a>':'—')+
+    '</td></tr>'
+  ).join('')||'<tr><td colspan="9">Nenhum resultado</td></tr>';
   $('pageInfo').textContent=fmt(filtered.length)+
     ' resultados · página '+(page+1)+' de '+
     Math.max(1,Math.ceil(filtered.length/pageSize));
@@ -452,10 +477,17 @@ function render(){
   $('next').disabled=(page+1)*pageSize>=filtered.length;
 }
 function changePage(delta){page+=delta;render()}
+function formatVerification(value){
+  if(!value)return 'Pendente';
+  const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}):(\d{2}))?/);
+  if(m)return m[3]+'/'+m[2]+'/'+m[1]+' '+(m[4]||'00')+':'+(m[5]||'00')+':'+(m[6]||'00');
+  return String(value);
+}
 function exportCSV(){
   const cols=['nome','titulo','autor','idioma','pais',
-    'status','status_original','catalogo','fonte','id','data'];
-  const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    'obra_verificada','autor_obra','nacionalidade_obra','protagonistas_obra',
+    'verificadas','localizada_em','referencia_obra','status','status_original','catalogo','fonte','id','data'];
+  const quote=v=>'"'+String(Array.isArray(v)?v.join(' / '):(v??'')).replace(/"/g,'""')+'"';
   const csv='\ufeff'+[
     cols.join(';'),
     ...filtered.map(r=>cols.map(c=>quote(r[c])).join(';'))
