@@ -17,6 +17,28 @@ def norm(s):
     s=unicodedata.normalize('NFKD',str(s or '')).casefold()
     return ' '.join(re.findall(r'[a-z0-9]+', ''.join(c for c in s if not unicodedata.combining(c))))
 
+def country_name(value):
+    raw=str(value or '').strip()
+    key=norm(raw)
+    canonical={
+        'japan':'Japão','japao':'Japão','japanese':'Japão','japonesa':'Japão',
+        'china':'China','chinesa':'China','south korea':'Coreia do Sul','coreia do sul':'Coreia do Sul','sul coreana':'Coreia do Sul',
+        'united states':'Estados Unidos','united states of america':'Estados Unidos','estados unidos':'Estados Unidos','estadunidense':'Estados Unidos',
+        'thailand':'Tailândia','tailandia':'Tailândia','tailandesa':'Tailândia',
+        'canada':'Canadá','canadense':'Canadá',
+        'united kingdom':'Reino Unido','reino unido':'Reino Unido','britanica':'Reino Unido','britanico':'Reino Unido',
+        'italy':'Itália','italia':'Itália','italiana':'Itália',
+        'denmark':'Dinamarca','dinamarca':'Dinamarca','dinamarquesa':'Dinamarca',
+        'australia':'Austrália','australiana':'Austrália',
+        'philippines':'Filipinas','filipinas':'Filipinas','mexico':'México','mexicana':'México',
+        'russia':'Rússia','russa':'Rússia','ireland':'Irlanda','irlanda':'Irlanda','irlandesa':'Irlanda',
+        'singapore':'Singapura','singapura':'Singapura','sweden':'Suécia','suecia':'Suécia',
+        'spain':'Espanha','espanha':'Espanha','chile':'Chile','taiwan':'Taiwan',
+        'new zealand':'Nova Zelândia','nova zelandia':'Nova Zelândia',
+        'czech republic':'República Tcheca','republica tcheca':'República Tcheca','india':'Índia'
+    }
+    return canonical.get(key,raw)
+
 def title_guess(name):
     s=Path(name).stem
     s=re.sub(r'^\d{4,9}[_\s-]+','',s)
@@ -35,7 +57,9 @@ def find_epubs(root):
     return sorted((p for p in root.rglob('*') if p.is_file() and p.suffix.lower()=='.epub' and not p.name.startswith('._')),key=lambda p:str(p))
 
 def identification_source(url):
-    host=urlparse(str(url or '')).netloc.lower().split(':')[0]
+    raw=str(url or '').strip()
+    parsed=urlparse(raw)
+    host=parsed.netloc.lower().split(':')[0]
     host=host.removeprefix('www.')
     known={
         'novelupdates.com':'Novel Updates',
@@ -45,14 +69,17 @@ def identification_source(url):
         'yenpress.com':'Yen Press',
         'penguinrandomhouse.com':'Penguin Random House',
         'goodreads.com':'Goodreads',
+        'fable.co':'Fable',
         'books.google.com':'Google Books',
         'google.com':'Google Books',
         'mebmarket.com':'MEB Market',
         'fanqienovel.com':'Fanqie Novel',
         'webnovel.com':'Webnovel',
         'wattpad.com':'Wattpad',
+        'tunwalai.com':'Tunwalai',
         'tappytoon.com':'Tappytoon',
         'wtr-lab.com':'WTR-Lab',
+        'marinetl.xyz':'MarineTL',
         'chrysanthemumgarden.com':'Chrysanthemum Garden',
         'kadokawa-anime.com':'KADOKAWA',
         'mementobl.com':'MeMento',
@@ -61,10 +88,19 @@ def identification_source(url):
     }
     for domain,label in known.items():
         if host==domain or host.endswith('.'+domain):return label
-    if not host:return ''
+    if not host:return raw
     if host.endswith('wordpress.com'):
         return host.split('.')[0].replace('-',' ').title()+' (WordPress)'
     return host.removeprefix('m.').replace('-',' ').title()
+
+def verification_display(value):
+    """Format timestamps for the HTML without inventing midnight for date-only values."""
+    raw=str(value or '').strip()
+    if not raw:return 'Pendente'
+    match=re.match(r'^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}):(\d{2}))?',raw)
+    if not match:return raw
+    date=f'{match.group(3)}/{match.group(2)}/{match.group(1)}'
+    return date+(f' {match.group(4)}:{match.group(5)}:{match.group(6)}' if match.group(4) else '')
 
 def extract_epub(p):
     out={'arquivo':p.name,'caminho':str(p),'tamanho':p.stat().st_size,'sha256':'','titulo':'','autores':[], 'idioma':'','identificadores':[], 'links':[], 'erro':''}
@@ -296,14 +332,45 @@ _EXPLICIT_PRESENTATION_GROUPS = {
     'Love Sea': ('obra_00068','obra_00069','obra_00070','obra_00071','obra_00072','obra_00073'),
     'The Villain Has Something to Say': ('obra_00107','obra_00108'),
     "Love for Love's Sake": ('obra_00111','obra_00112'),
-    "Trash of the Count's Family": ('obra_00103','obra_00104','obra_00114','obra_00759','obra_00946','obra_02567'),
+    "Trash of the Count's Family": ('obra_00103','obra_00104','obra_00114','obra_00759','obra_00946','obra_02567','obra_02519'),
+    'UnPrison': ('obra_01318','obra_01319'),
     'Raven of the Inner Palace': ('obra_00102','obra_00124'),
     'The Case Files of Jeweler Richard': ('obra_00132','obra_00133','obra_02495','obra_02736'),
     'I Can Do It': ('obra_00173','obra_00174','obra_02024'),
     'The Perfect Destiny': ('obra_00078','obra_00159'),
     'KinnPorsche': ('obra_00079','obra_00080'),
     "The Legendary Master's Wife": ('obra_00083','obra_00084','obra_00085','obra_00086','obra_00087'),
-    'Little Mushroom': ('obra_00127','obra_00128'),
+    "The Beauty's Blade": ('obra_00937','obra_01680'),
+    'Guardian: Zhen Hun': ('obra_00081','obra_00210','obra_00625','obra_00894'),
+    'Copper Coins: Tong Qian Kan Shi': ('obra_00964','obra_02016'),
+    'Little Mushroom': ('obra_00127','obra_00128','obra_01979'),
+    'Semantic Error': ('obra_01320','obra_02574'),
+    'Thousand Autumns: Qian Qiu': ('obra_01689','obra_00030','obra_00205'),
+    'Circle of Inevitability': ('obra_01359','obra_02522'),
+    'Error: Metamorphosis': ('obra_02470','obra_02749','obra_02772'),
+    'Even If Everyone Hates You': ('obra_02259','obra_02823'),
+    'Evening Stars of Southern Tibet': ('obra_02807','obra_02877'),
+    'Tattoo': ('obra_00969','obra_02648'),
+    'The Blind Concubine': ('obra_00049','obra_00877','obra_01124'),
+    'The Abandoned Son Runs Rampant': ('obra_01149','obra_02734'),
+    'The Sword Named No Way Out': ('obra_00629','obra_02982'),
+    'The Trashy PD Has To Survive as an Idol': ('obra_02975','obra_02976'),
+    'This Venerable One Really Didn’t Abandon My Familiar': ('obra_02719','obra_02721'),
+    'Tsuki ga Michibiku Isekai Douchuu': ('obra_02753','obra_02754','obra_02755','obra_02756','obra_02757','obra_02758','obra_02759','obra_02760','obra_02761','obra_02762','obra_02763','obra_02764','obra_02765','obra_02766','obra_02767','obra_02768','obra_02769','obra_02770','obra_02771'),
+    'There’s Something Wrong With This Account': ('obra_02842','obra_01069'),
+    'Waiting For You Online': ('obra_00703','obra_02726'),
+    'When Two Alphas Meet, One’s an Omega': ('obra_01443','obra_02920','obra_02814'),
+    'Turning': ('obra_02102','obra_00547','obra_01491','obra_01695','obra_00438','obra_00953'),
+    "The Hunter's Gonna Lay Low": ('obra_00123','obra_01352','obra_02382','obra_02679','obra_02779','obra_00267'),
+    'The Husky and His White Cat Shizun': ('obra_00645','obra_00777','obra_00776','obra_01066','obra_02477'),
+    'The Return of Cambrian Period': ('obra_00358','obra_02593'),
+    'The S-Classes That I Raised': ('obra_00472','obra_00001','obra_02572'),
+    'The Sickly Beauty Substitute Called It Quits': ('obra_02513','obra_02514','obra_02515'),
+    'The Song of Achilles': ('obra_00493','obra_00558'),
+    "The White Cat's Divine Scratching Post": ('obra_02829','obra_01581','obra_02315'),
+    'Thriller Trainee': ('obra_00197','obra_02583'),
+    'Tryst Six Venom': ('obra_00630','obra_00634'),
+    'Welcome to the Nightmare Live': ('obra_01411','obra_02808'),
     'Tharntype': ('obra_00056','obra_00057'),
     "The Other World's Books Depend on the Bean Counter": ('obra_00012','obra_00013'),
     'Alabaster Penitentiary': ('obra_00096','obra_00097','obra_00098','obra_00099'),
@@ -334,6 +401,7 @@ _EXPLICIT_PRESENTATION_GROUPS = {
     'After I Got Married, Those Who Betrayed Me Were Reborn': ('obra_00359','obra_01195'),
     'After Killing My Way Through the Instance, I Raised the Evil God Within the Rules': ('obra_01244','obra_01302'),
     'After the Disabled God of War Became My Concubine': ('obra_02503','obra_02914'),
+    'Transmigrating into the Prince Regent’s Beloved Runaway Wife': ('obra_00272','obra_00275'),
 }
 
 def presentation_title_key(row):
@@ -370,6 +438,29 @@ def presentation_title_key(row):
         if normalized==alias_key or normalized.startswith(alias_key+' '):
             return ' '.join(unicodedata.normalize('NFKD',canonical).casefold().split()),canonical
     return normalized,title.strip(' _-.,'),
+
+def presentation_authors(row):
+    """Return normalized author tokens used to keep homonymous works apart."""
+    values=list(row.get('autores') or [])
+    review=row.get('verificacao_obra') or {}
+    if review.get('autor'):
+        values.append(review['autor'])
+    result=set()
+    for value in values:
+        # Parenthetical native spellings are aliases; split true co-authors.
+        text=re.sub(r'\([^()]*\)', ' ', str(value))
+        for part in re.split(r'(?i)\s+and\s+|\s*[;/&]\s*|\s*,\s*(?!\s)',text):
+            key=norm(part)
+            if key:result.add(key)
+    return result
+
+def presentation_authors_compatible(rows):
+    author_sets=[presentation_authors(row) for row in rows]
+    nonempty=[authors for authors in author_sets if authors]
+    if len(nonempty)<2:return True
+    # Require a shared author when both records name one. Explicit groups above
+    # remain available for known pen names and translated author-name order.
+    return all(bool(left & right) for i,left in enumerate(nonempty) for right in nonempty[i+1:])
 
 def presentation_obras(payload):
     """Group only unambiguous explicit-volume rows for the Obras HTML view."""
@@ -498,7 +589,9 @@ def presentation_obras(payload):
     normalized_merges={}
     for key,entries in normalized_rows.items():
         if len(entries)>1:
-            normalized_merges[entries[0][0]]=entries
+            candidates=[rows[index] for index,_ in entries]
+            if presentation_authors_compatible(candidates):
+                normalized_merges[entries[0][0]]=entries
     consumed=set();normalized_result=[]
     for index,row in enumerate(rows):
         if index in consumed:continue
@@ -560,7 +653,62 @@ def presentation_obras(payload):
     result['obras']=rows
     return result
 
-def inject_html(original, payload):
+def duplicate_report_groups(path, works_by_key):
+    """Read the supplied visual-duplicate report and enrich members from JSON."""
+    if not path.exists():return []
+    text=path.read_text(encoding='utf-8')
+    section='Repetição exata de título'
+    groups=[];group=None;member=None
+    def finish_member():
+        nonlocal member
+        if member and member.get('chave'):
+            work=works_by_key.get(member['chave'],{})
+            review=work.get('verificacao_obra') or {}
+            source=str(review.get('fonte_nacionalidade') or '').strip()
+            member.update({
+                'pais':review.get('nacionalidade_obra') or 'Pendente',
+                'pais_identificado_em':identification_source(source) if source else ('Fonte não registrada' if review.get('nacionalidade_obra') else 'Pendente'),
+                'referencias':review.get('referencias') or [],
+            })
+            group['membros'].append(member)
+        member=None
+    def finish_group():
+        nonlocal group
+        finish_member()
+        if group and len(group['membros'])>1:
+            group['id']=f"{group['tipo']}:{len(groups)+1}"
+            groups.append(group)
+        group=None
+    for line in text.splitlines():
+        stripped=line.strip()
+        if stripped.startswith('PARTE A -'):
+            finish_group();section='Repetição exata de título';continue
+        if stripped.startswith('PARTE B -'):
+            finish_group();section='Candidato por volume ou subtítulo';continue
+        header=re.match(r'^\[(\d+)\] TITULO-BASE: (.*?) \| LINHAS: (\d+) \|',stripped)
+        if header:
+            finish_group()
+            group={'numero':int(header.group(1)),'titulo_base':header.group(2),
+                   'tipo':section,'membros':[]}
+            continue
+        if group is None:continue
+        key=re.match(r'^\(\d+\) CHAVE: (\S+)',stripped)
+        if key:
+            finish_member();member={'chave':key.group(1),'titulo':'','autor':'',
+                                     'ids':[],'arquivos':[]}
+            continue
+        if member is None:continue
+        for label,key_name in (('TITULO:','titulo'),('AUTOR(ES):','autor')):
+            if stripped.startswith(label):member[key_name]=stripped[len(label):].strip();break
+        else:
+            if stripped.startswith('IDS:'):
+                member['ids']=[value.strip() for value in stripped[4:].split(',') if value.strip()]
+            elif stripped.startswith('- '):
+                member['arquivos'].append(stripped[2:])
+    finish_group()
+    return groups
+
+def inject_html(original, payload, root):
     start='<!-- CHECK_EPUB_EXTRA_START -->';end='<!-- CHECK_EPUB_EXTRA_END -->'
     original=re.sub(re.escape(start)+r'.*?'+re.escape(end)+r'\s*','',original,flags=re.S)
     original=re.sub(r'<!-- CHECK_EPUB_NAV_START -->.*?<!-- CHECK_EPUB_NAV_END -->\s*','',original,flags=re.S)
@@ -572,31 +720,40 @@ def inject_html(original, payload):
     if not data_match:raise ValueError('Dados DATA não encontrados no HTML; não alterado')
     data_start=data_match.end()
     report_data,data_end=json.JSONDecoder().raw_decode(original[data_start:])
-    confirmed_files=set();confirmed_epub_ids=set();country_counts=Counter()
+    works_by_key={str(work.get('chave','')):work for work in payload.get('obras',[])}
+    duplicate_groups=duplicate_report_groups(
+        root/'output'/'relatorio_completo_obras_duplicadas.txt',works_by_key)
+    # Add the report-derived duplicate context to each EPUB row, keyed by message ID.
+    duplicate_groups_by_id=defaultdict(list)
+    for group in duplicate_groups:
+        for member in group['membros']:
+            for message_id in member.get('ids',[]):
+                duplicate_groups_by_id[str(message_id)].append(group)
+    for record in report_data.get('records',[]):
+        record['duplicatas_relatorio']=duplicate_groups_by_id.get(str(record.get('id','')),[])
+    confirmed_files=set();confirmed_epub_ids=set();country_counts=Counter();country_epub_ids=defaultdict(set)
     confirmed_work_keys=set()
     display_payload=presentation_obras(payload)
     display_rows=display_payload.get('obras',[])
+    display_payload['grupos_duplicatas_relatorio']=duplicate_groups
+    for work in display_rows:
+        review=work.get('verificacao_obra') or {}
+        if review:work['verificadas_exibicao']=verification_display(review.get('verificado_em'))
     records_by_id={str(record.get('id','')):record for record in report_data.get('records',[])}
     for record in report_data.get('records',[]):
-        if record.get('status')=='identificado':
-            record['localizada_em']='Catálogo de obras (correspondência exata)'
-        elif record.get('status')=='revisar':
-            record['localizada_em']='Catálogo de obras (correspondência a revisar)'
-        elif record.get('status')=='nao_encontrado':
-            record['localizada_em']='Não encontrada no catálogo'
-        else:
-            record['localizada_em']='Sem confirmação no catálogo'
+        record['localizada_em']='Pendente'
     def known_review(review):
         nationality=str((review or {}).get('nacionalidade_obra') or '').strip()
-        return nationality.casefold() not in {
+        normalized=nationality.casefold()
+        return normalized not in {
             '', 'pendente', 'não identificada', 'nao identificada',
             'desconhecida', 'unknown', 'unknown nationality'
-        }
+        } and not normalized.startswith(('não identificada', 'nao identificada'))
     for work in payload.get('obras',[]):
         review=work.get('verificacao_obra') or {}
         if not review:continue
         is_confirmed=known_review(review)
-        nationality=str(review.get('nacionalidade_obra') or 'Pendente').strip()
+        nationality=country_name(review.get('nacionalidade_obra') or 'Pendente')
         filenames=review.get('epubs_lidos') or work.get('arquivos',[])
         for filename in filenames:
             filename=str(filename)
@@ -605,32 +762,39 @@ def inject_html(original, payload):
             record_id=match.group(1) if match else ''
             record=records_by_id.get(record_id)
             if not record:continue
-            refs=review.get('referencias') or []
-            sources=list(dict.fromkeys(filter(None,(identification_source(ref) for ref in refs))))
-            found_at=' + '.join(sources[:3]) if sources else 'EPUB'
-            if len(sources)>3:found_at+=' + outras fontes'
+            nationality_source=str(review.get('fonte_nacionalidade') or '').strip()
+            found_at=(identification_source(nationality_source) if is_confirmed and nationality_source
+                      else ('Fonte não registrada' if is_confirmed else 'Pendente'))
             record.update({
                 'obra_verificada':work.get('titulo',''),
+                'obra_chave':work.get('chave',''),
                 'autor_obra':review.get('autor',''),
                 'nacionalidade_obra':nationality,
                 'protagonistas_obra':review.get('protagonistas',[]),
-                'verificadas':review.get('verificado_em',''),
+                'verificadas':verification_display(review.get('verificado_em')),
                 'localizada_em':found_at,
+                'fonte_nacionalidade_obra':nationality_source,
                 'referencia_obra':(review.get('referencias') or [''])[0],
             })
-            if is_confirmed:confirmed_epub_ids.add(record_id)
+            if is_confirmed:
+                confirmed_epub_ids.add(record_id)
+                country_epub_ids[nationality].add(record_id)
     # Count reviewed works using the same presentation grouping as Obras.
     # The EPUB count below still counts every associated file in the Explorer.
     for work in display_rows:
         review=work.get('verificacao_obra') or {}
         if not known_review(review):continue
-        nationality=str(review.get('nacionalidade_obra') or 'Pendente').strip()
+        nationality=country_name(review.get('nacionalidade_obra') or 'Pendente')
         country_counts[nationality]+=1
         confirmed_work_keys.add(str(work.get('chave') or work.get('titulo') or ''))
     report_data['obra_origins']={
         'work_count':len(confirmed_work_keys),
         'epub_count':len(confirmed_epub_ids),
         'countries':dict(country_counts),
+        'country_details':{
+            country:{'work_count':count,'epub_count':len(country_epub_ids.get(country,set()))}
+            for country,count in country_counts.items()
+        },
     }
     source=str(report_data.get('source') or '').strip()
     review_source='metadados de check_epub_obras.json'
@@ -654,34 +818,74 @@ def inject_html(original, payload):
 <button class="nav" id="nav-pending" onclick="ceNavigate('pending')" title="Baixadas não identificadas"><span class="navicon">⌕</span><span class="navlabel">Baixadas não identificadas</span></button>
 <button class="nav" id="nav-problems" onclick="ceNavigate('problems')" title="Problemas sem solução"><span class="navicon">!</span><span class="navlabel">Problemas sem solução</span></button>
 <button class="nav" id="nav-duplicates" onclick="ceNavigate('duplicates')" title="Duplicatas"><span class="navicon">▣</span><span class="navlabel">Duplicatas</span></button>'''
-    if '</aside>' not in original or '</main>' not in original or '</body>' not in original:raise ValueError('Estrutura HTML inesperada; não alterada')
-    original=original.replace('</aside>','<!-- CHECK_EPUB_NAV_START -->\n'+nav+'\n<!-- CHECK_EPUB_NAV_END -->\n</aside>',1)
+    if '</nav>' not in original or 'id="primaryTabs"' not in original or '</main>' not in original or '</body>' not in original:raise ValueError('Estrutura HTML inesperada; não alterada')
+    original=original.replace('</nav>','<!-- CHECK_EPUB_NAV_START -->\n'+nav+'\n<!-- CHECK_EPUB_NAV_END -->\n</nav>',1)
     sections='''<!-- CHECK_EPUB_SECTIONS_START -->
-<section id="works" class="hidden"><div class="eyebrow">Biblioteca / Obras</div><h1>Obras</h1><p class="sub">Obras em revisão, com autoria, origem e personagens conferidos nos EPUBs.</p><div class="panel"><input id="ce-search" placeholder="Buscar título, autor, protagonista ou arquivo" oninput="cePage=0;ceRender()" style="width:100%;padding:12px;margin-bottom:14px;border:1px solid #ddd;border-radius:8px"><div id="ce-works"></div></div></section>
+<section id="works" class="hidden"><div class="eyebrow">Biblioteca / Obras</div><h1>Obras</h1><p class="sub">Obras ainda em revisão de nacionalidade, autoria ou personagens.</p><div class="panel"><style>.ce-author-control{position:relative;min-width:0}.ce-author-trigger{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:1px solid #dfe5ee;border-radius:8px;background:#fff;color:#26364d;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;cursor:pointer}.ce-author-trigger:hover,.ce-author-trigger[aria-expanded="true"]{border-color:#3457a5}.ce-author-menu{position:absolute;z-index:30;top:calc(100% + 6px);right:0;width:min(420px,88vw);padding:8px;border:1px solid #dfe5ee;border-radius:8px;background:#fff;box-shadow:0 8px 24px #172b4d24}.ce-author-menu[hidden]{display:none}.ce-author-search{box-sizing:border-box;width:100%;padding:9px 10px;margin-bottom:7px;border:1px solid #dfe5ee;border-radius:6px}.ce-author-options{max-height:280px;overflow:auto}.ce-author-option{width:100%;display:flex;justify-content:space-between;gap:14px;padding:8px 9px;border:0;border-radius:5px;background:#fff;color:#26364d;text-align:left;cursor:pointer}.ce-author-option:hover,.ce-author-option[aria-selected="true"]{background:#f0f4fb}.ce-author-count{color:#77869b;white-space:nowrap}.ce-title-cell{display:flex;align-items:center;gap:8px}.ce-title-text{min-width:0}.ce-row-expander{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;margin:0;padding:0;border:1px solid transparent;border-radius:5px;background:transparent;color:#718096;cursor:pointer}.ce-row-expander:hover,.ce-row-expander[aria-expanded="true"]{background:#f0f4fb;color:#334155;border-color:#e2e8f0}.ce-row-expander .ce-chevron{font-size:18px;line-height:1;transition:transform .15s ease}.ce-row-expander[aria-expanded="true"] .ce-chevron{transform:rotate(90deg)}.ce-data-row td{vertical-align:middle}.ce-detail-row[hidden]{display:none!important}.ce-detail-row:not([hidden]){display:table-row}.ce-detail-row>td{max-width:none!important;padding:0!important;background:#f8fafc!important;border-bottom:1px solid #e8edf3}.ce-expanded{box-sizing:border-box;width:100%;padding:14px 20px 16px 42px;background:#f8fafc;border-top:1px solid #e8edf3}.ce-expanded-heading{display:flex;align-items:center;gap:8px;margin:0 0 9px;color:#52627a;font-size:12px;font-weight:650}.ce-expanded-wrap{width:100%;overflow-x:auto}.ce-expanded-table{width:100%;min-width:760px;table-layout:fixed;font-size:12px;background:#fff;border:1px solid #e8edf3;border-radius:6px}.ce-expanded-table th{background:#f5f7fa;color:#77869b;font-size:11px;font-weight:600}.ce-expanded-table th:nth-child(1){width:27%}.ce-expanded-table th:nth-child(2){width:12%}.ce-expanded-table th:nth-child(3){width:10%}.ce-expanded-table th:nth-child(4){width:14%}.ce-expanded-table th:nth-child(5){width:17%}.ce-expanded-table th:nth-child(6){width:20%}.ce-expanded-table td,.ce-expanded-table th{max-width:none!important;padding:9px 11px;border-bottom:1px solid #e8edf3;vertical-align:top}.ce-expanded-table td:first-child{font-weight:550;color:#334155}.ce-expanded-table tbody tr:last-child td{border-bottom:0}.ce-expanded-table a{color:#3457a5}</style><style>.ce-main-table{width:100%;table-layout:fixed}.ce-main-table th:nth-child(1){width:30%}.ce-main-table th:nth-child(2){width:17%}.ce-main-table th:nth-child(3){width:12%}.ce-main-table th:nth-child(4){width:25%}.ce-main-table th:nth-child(5){width:10%}.ce-main-table th:nth-child(6){width:6%}.ce-data-row td{vertical-align:middle}.ce-detail-row[hidden]{display:none!important}.ce-detail-row:not([hidden]){display:table-row}.ce-detail-row>td{max-width:none!important;padding:0!important;background:#f8fafc!important;border-bottom:1px solid #e8edf3}.ce-expanded{box-sizing:border-box;width:100%;padding:14px 20px 16px 42px;background:#f8fafc;border-top:1px solid #e8edf3}.ce-expanded-heading{margin:0 0 8px;color:#52627a;font-size:12px;font-weight:650}.ce-expanded-wrap{display:block;width:100%;overflow-x:auto}.ce-expanded-table{display:table;box-sizing:border-box;width:100%;min-width:760px;table-layout:fixed;margin:0;background:#fff;border:1px solid #e8edf3;border-radius:6px;font-size:12px}.ce-expanded-table th{background:#f5f7fa;color:#77869b;font-size:11px;font-weight:600}.ce-expanded-table th:nth-child(1){width:27%}.ce-expanded-table th:nth-child(2){width:12%}.ce-expanded-table th:nth-child(3){width:10%}.ce-expanded-table th:nth-child(4){width:14%}.ce-expanded-table th:nth-child(5){width:17%}.ce-expanded-table th:nth-child(6){width:20%}.ce-expanded-table td,.ce-expanded-table th{max-width:none!important;padding:9px 11px;border-bottom:1px solid #e8edf3;vertical-align:top}.ce-expanded-table tbody tr:last-child td{border-bottom:0}.ce-expanded-table a{color:#3457a5}</style><style>.ce-detail-row[hidden]{display:none!important}.ce-detail-row:not([hidden]){display:table-row}.ce-detail-row>td{max-width:none!important;padding:0!important;background:#f8fafc!important;border-bottom:1px solid #e8edf3}.ce-expanded{box-sizing:border-box;width:100%;padding:14px 20px 16px 42px;background:#f8fafc;border-top:1px solid #e8edf3}.ce-expanded-heading{margin:0 0 8px;color:#52627a;font-size:12px;font-weight:650}.ce-expanded-wrap{display:block;width:100%;overflow-x:auto}.ce-expanded-table{display:table;box-sizing:border-box;width:100%;min-width:760px;table-layout:fixed;margin:0;background:#fff;border:1px solid #e8edf3;border-radius:6px;font-size:12px}.ce-expanded-table th{background:#f8fafc;color:#718096;font-size:11px;font-weight:600}.ce-expanded-table td,.ce-expanded-table th{max-width:none!important;padding:9px 11px;border-bottom:1px solid #e8edf3;vertical-align:top}.ce-expanded-table tbody tr:last-child td{border-bottom:0}.ce-expanded-table a{color:#3457a5}</style><div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:10px;margin-bottom:18px"><input id="ce-search" placeholder="Buscar título, autor, protagonista ou arquivo" oninput="cePage=0;ceRender()" style="box-sizing:border-box;width:100%;min-width:0;padding:11px 12px;border:1px solid #dfe5ee;border-radius:8px;background:#fff;color:#26364d"><div class="ce-author-control" id="ce-author-filter"><button type="button" id="ce-author-button" class="ce-author-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="ceToggleAuthorMenu()"><span id="ce-author-label">Todos os autores</span><span aria-hidden="true">⌄</span></button><div id="ce-author-menu" class="ce-author-menu" hidden><input id="ce-author-search" class="ce-author-search" placeholder="Buscar autor" aria-label="Buscar autor" oninput="ceRenderAuthorOptions()"><div id="ce-author-options" class="ce-author-options" role="listbox" aria-label="Autores"></div></div></div></div><div id="ce-works"></div></div></section>
 <section id="pending" class="hidden"><div class="eyebrow">Biblioteca / Varredura local</div><h1>Baixadas não identificadas</h1><p class="sub">Obras baixadas ainda sem identificação confirmada, sem repetir cópias idênticas.</p><div class="panel" id="ce-pending"></div></section>
 <section id="problems" class="hidden"><div class="eyebrow">Biblioteca / Pendências</div><h1>Problemas sem solução</h1><p class="sub">Somente falhas comprovadas sem outra cópia correspondente; situações não verificáveis permanecem separadas.</p><div class="panel" id="ce-problems"></div></section>
 <section id="duplicates" class="hidden"><div class="eyebrow">Biblioteca / Auditoria</div><h1>Duplicatas</h1><p class="sub">Cópias idênticas e agrupamentos com evidência; títulos iguais sem autor não são mesclados automaticamente.</p><div class="panel" id="ce-duplicates"></div></section>
 <!-- CHECK_EPUB_SECTIONS_END -->'''
+    sections=sections.replace('<!-- CHECK_EPUB_SECTIONS_END -->','''<style>
+#works .ce-data-row td{vertical-align:middle}
+#works .ce-row-expander{border-color:#e8edf3;background:#fff}
+#works .ce-row-expander:hover,#works .ce-row-expander[aria-expanded="true"]{border-color:#cbd5e1;background:#f0f4fb}
+#works .ce-detail-row[hidden]{display:none!important}
+#works .ce-detail-row:not([hidden]){display:table-row}
+#works .ce-detail-row>td{display:table-cell!important;width:auto!important;max-width:none!important;padding:0!important;background:#f8fafc!important;border-bottom:1px solid #e8edf3}
+#works .ce-expanded{box-sizing:border-box;display:block;width:100%;padding:14px 18px 16px 42px;background:#f8fafc;border-top:1px solid #e8edf3}
+#works .ce-expanded-heading{margin:0 0 8px;color:#52627a;font-size:12px;font-weight:650}
+#works .ce-expanded-wrap{display:block;width:100%;overflow-x:auto}
+#works .ce-expanded-table{display:table;box-sizing:border-box;width:100%;min-width:640px;margin:0;border:1px solid #e8edf3;border-radius:6px;border-collapse:collapse;table-layout:fixed;background:#fff;font-size:12px}
+#works .ce-expanded-table th{background:#f8fafc;color:#718096;font-size:11px;font-weight:600}
+#works .ce-expanded-table td,#works .ce-expanded-table th{max-width:none!important;padding:8px 10px;border-bottom:1px solid #e8edf3;vertical-align:top}
+#works .ce-expanded-table th:nth-child(1){width:23%}#works .ce-expanded-table th:nth-child(2){width:12%}#works .ce-expanded-table th:nth-child(3){width:10%}#works .ce-expanded-table th:nth-child(4){width:12%}#works .ce-expanded-table th:nth-child(5){width:18%}#works .ce-expanded-table th:nth-child(6){width:25%}
+#works .ce-expanded-table tbody tr:last-child td{border-bottom:0}
+#works .ce-expanded-table a{color:#3457a5}
+</style><!-- CHECK_EPUB_SECTIONS_END -->''')
     original=original.replace('</main>',sections+'\n</main>',1)
     js='''<script>
 const CE_DATA=__CE_PAYLOAD__;
 const ceEsc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function ceVerifiedLabel(value){const m=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})(?:[T ](\\d{2}):(\\d{2}):(\\d{2}))?/);return m?m[3]+'/'+m[2]+'/'+m[1]+' '+(m[4]||'00')+':'+(m[5]||'00')+':'+(m[6]||'00'):(value||'Pendente');}
-const ceViews=['overview','explorer','works','pending','problems','duplicates'];
-function ceNavigate(v){if(!ceViews.includes(v))v='overview';ceViews.forEach(n=>{document.getElementById(n)?.classList.toggle('hidden',n!==v);document.getElementById('nav-'+n)?.classList.toggle('active',n===v)});location.hash=v;}
+function ceCatalogPendingGroups(){const localIds=new Set();function collectIds(work){(work.ids||[]).forEach(id=>localIds.add(String(id)));(work.arquivos||[]).forEach(file=>{const match=String(file).match(/^(\d{1,9})[_\s-]/);if(match)localIds.add(match[1]);});(work.itens_serie||[]).forEach(collectIds)}CE_DATA.obras.forEach(collectIds);const pendingCountries=new Set(['Pendente','Não identificada','Conflito']);return novelGroups.filter(group=>pendingCountries.has(group.country)&&!group.records.some(record=>{const match=String(record.nome||'').match(/^(\d{1,9})[_\s-]/);return localIds.has(String(record.id||match?.[1]||''));})).map((group,index)=>{const author=group.authors.join(' / '),protagonists=group.protagonistList||[],observations=group.records.map(record=>[record.nacionalidade_obra,record.observacao_obra,record.criterio_nacionalidade].filter(Boolean).join(' ')).filter(Boolean).join(' | ');const children=group.records.map(record=>{const match=String(record.nome||'').match(/^(\d{1,9})[_\s-]/),id=String(record.id||match?.[1]||'');return {chave:'catalog:'+group.key+':'+id,titulo:group.title,ids:id?[id]:[],arquivos:record.nome?[record.nome]:[],autores:group.authors,quantidade:1,verificacao_obra:{autor:author,nacionalidade_obra:group.country,protagonistas:protagonists,observacao:record.nacionalidade_obra||'',fonte_nacionalidade:record.fonte_nacionalidade_obra||'',referencias:record.referencia_obra?[record.referencia_obra]:[]}}});return {chave:'catalog_pending:'+index+':'+group.key,titulo:group.title,titulos_alternativos:[],autores:group.authors,arquivos:group.records.map(record=>record.nome).filter(Boolean),ids:group.records.map(record=>String(record.id||'')).filter(Boolean),quantidade:group.records.length,itens_serie:children,nacionalidade_confirmada:false,nacionalidade_obra:group.country,protagonistas_obra:protagonists,catalog_evidence:observations,verificadas_exibicao:group.verified||'Pendente'};});}
+const CE_CATALOG_PENDING=ceCatalogPendingGroups();
+function ceVerifiedLabel(value){const m=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})(?:[T ](\\d{2}):(\\d{2}):(\\d{2}))?/);return m?m[3]+'/'+m[2]+'/'+m[1]+(m[4]?' '+m[4]+':'+m[5]+':'+m[6]:''):(value||'Pendente');}
+const ceViews=['overview','novels','explorer','works','pending','problems','duplicates'];
+function ceNavigate(v){if(!ceViews.includes(v))v='overview';const section=v==='novels'?'overview':v;for(const n of ['overview','explorer','works','pending','problems','duplicates'])document.getElementById(n)?.classList.toggle('hidden',n!==section);document.getElementById('overviewPanel')?.classList.toggle('hidden',v!=='overview');document.getElementById('novelsPanel')?.classList.toggle('hidden',v!=='novels');ceViews.forEach(n=>document.getElementById('nav-'+n)?.classList.toggle('active',n===v));location.hash=v;}
 const ceOriginalNavigate=navigate;
 navigate=ceNavigate;
 let cePage=0;const cePageSize=50;
 function ceDetails(g){if(g.itens_serie?.length)return g.itens_serie.map(v=>'<div style="padding:8px 0;border-bottom:1px solid #eee"><strong>'+ceEsc(v.titulo)+'</strong>'+(v.categoria?'<div>Categoria: '+ceEsc(v.categoria)+'</div>':'')+'<div>Autor: '+ceEsc(v.autores.join(', ')||'Não informado')+'</div>'+v.arquivos.map(f=>'<div>Arquivo: '+ceEsc(f)+'</div>').join('')+'</div>').join('');return g.arquivos.map(f=>'<div style="padding:5px 0">'+ceEsc(f)+'</div>').join('');}
-function ceTable(items,obrasMode=false){if(!items.length)return '<p class="muted">Nenhum registro disponível nesta categoria.</p>';
+function ceWorkAuthor(g){const v=g.verificacao_obra||{};return String(v.autor||(g.autores||[]).join(', ')||'Não informado');}
+function ceIsFanfic(g){const v=g.verificacao_obra||{};const evidence=[g.titulo,...(g.titulos_alternativos||[]),g.catalog_evidence||'',v.nacionalidade_obra||'',v.autor||'',v.criterio_nacionalidade||'',v.observacao||'',JSON.stringify(v.pesquisa_direcionada||{}),JSON.stringify(v.pesquisa_novel_updates||{})].join(' ').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('pt-BR');return /\\b(fanfic|fanfiction|fan fiction|fanwork|fan work)\\b/.test(evidence);}
+function ceAuthorNorm(value){return String(value||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('pt-BR').replace(/[^\\p{L}\\p{N}]+/gu,' ').trim().replace(/\\s+/g,' ');}
+function ceWorkAuthorAliases(g){const raw=ceWorkAuthor(g);const aliases=[raw,raw.replace(/\\([^()]*\\)/g,' ').replace(/\\s+/g,' ').trim(),...[...raw.matchAll(/\\(([^()]*)\\)/g)].map(m=>m[1])];return [...new Set(aliases.map(ceAuthorNorm).filter(Boolean))];}
+const ceAuthorParents=new Map();
+function ceAuthorFind(key){if(!ceAuthorParents.has(key))ceAuthorParents.set(key,key);let parent=ceAuthorParents.get(key);if(parent!==key){parent=ceAuthorFind(parent);ceAuthorParents.set(key,parent);}return parent;}
+function ceBuildAuthorIndex(){const works=[...CE_DATA.obras,...CE_CATALOG_PENDING].filter(g=>!g.nacionalidade_confirmada&&!ceIsFanfic(g));for(const g of works){const aliases=ceWorkAuthorAliases(g);for(const alias of aliases)ceAuthorFind(alias);for(let i=1;i<aliases.length;i++){const a=ceAuthorFind(aliases[0]),b=ceAuthorFind(aliases[i]);if(a!==b){if(a<b)ceAuthorParents.set(b,a);else ceAuthorParents.set(a,b);}}}const labels=new Map(),counts=new Map(),aliasesByGroup=new Map();for(const g of works){const group=ceAuthorFind(ceWorkAuthorAliases(g)[0]),label=ceWorkAuthor(g);counts.set(group,(counts.get(group)||0)+1);if(!labels.has(group))labels.set(group,new Map());labels.get(group).set(label,(labels.get(group).get(label)||0)+1);if(!aliasesByGroup.has(group))aliasesByGroup.set(group,new Set());ceWorkAuthorAliases(g).forEach(alias=>aliasesByGroup.get(group).add(alias));}const result=new Map();for(const [group,count] of counts){const label=[...labels.get(group)].sort((a,b)=>b[1]-a[1]||a[0].length-b[0].length||a[0].localeCompare(b[0],'pt-BR'))[0][0];result.set(group,{label,count,aliases:[...aliasesByGroup.get(group)]});}return result;}
+const ceAuthorIndex=ceBuildAuthorIndex();let ceSelectedAuthor='';let ceAuthorCounts=[];let ceFanficCount=0;
+function ceToggleAuthorMenu(){const menu=document.getElementById('ce-author-menu');const button=document.getElementById('ce-author-button');menu.hidden=!menu.hidden;button.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden){ceRenderAuthorOptions();document.getElementById('ce-author-search').focus();}}
+function ceCloseAuthorMenu(){const menu=document.getElementById('ce-author-menu');if(!menu)return;menu.hidden=true;document.getElementById('ce-author-button')?.setAttribute('aria-expanded','false');}
+function ceSelectAuthor(author){ceSelectedAuthor=author;cePage=0;ceCloseAuthorMenu();ceRender();}
+function ceRenderAuthorOptions(){const query=(document.getElementById('ce-author-search')?.value||'').trim().toLocaleLowerCase();const allCount=ceAuthorCounts.reduce((sum,item)=>sum+item[1].count,0);const options=[['','Todos os autores',allCount,''],...(ceFanficCount?[['__fanfic__','Fanfic',ceFanficCount,'']]:[]),...ceAuthorCounts.map(([key,info])=>[key,info.label,info.count,info.aliases.join(' ')])].filter((item,index)=>index===0||!query||(item[1]+' '+item[3]).toLocaleLowerCase().includes(query));document.getElementById('ce-author-options').innerHTML=options.map(([value,label,count])=>'<button type="button" class="ce-author-option" role="option" aria-selected="'+String(value===ceSelectedAuthor)+'" data-author="'+ceEsc(value)+'" title="'+(value==='__fanfic__'?'Histórias derivadas de obras, universos ou personagens existentes':'')+'" onclick="ceSelectAuthor(this.dataset.author)"><span>'+ceEsc(label)+'</span><span class="ce-author-count">'+count+'</span></button>').join('')||'<div class="muted" style="padding:9px">Nenhum autor encontrado.</div>';}
+document.addEventListener('click',event=>{if(!event.target.closest('#ce-author-filter'))ceCloseAuthorMenu();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')ceCloseAuthorMenu();});
+function ceDuplicateGroupsFor(work){const keys=new Set();function collect(item){if(item?.chave)keys.add(String(item.chave));(item?.itens_serie||[]).forEach(collect);}collect(work);return (CE_DATA.grupos_duplicatas_relatorio||[]).filter(group=>group.membros.some(member=>keys.has(String(member.chave))));}
+function ceSourceLabel(value){if(!value)return '';try{const host=new URL(value).hostname.replace(/^www\\./,'');const names={'novelupdates.com':'Novel Updates','jjwxc.net':'JJWXC','ridibooks.com':'RIDI Books','sevenseasentertainment.com':'Seven Seas','yenpress.com':'Yen Press','goodreads.com':'Goodreads','books.google.com':'Google Books','google.com':'Google Books','mebmarket.com':'MEB Market','fanqienovel.com':'Fanqie Novel','webnovel.com':'Webnovel','wattpad.com':'Wattpad','tunwalai.com':'Tunwalai','wtr-lab.com':'WTR-Lab','marinetl.xyz':'MarineTL'};return names[host]||host;}catch{return value;}}
+function ceWorkLeaves(work){if(work.verificacao_obra)return [work];const children=work.itens_serie||[];return children.length?children.flatMap(ceWorkLeaves):[work];}
+function ceExpandedReferenceLinks(urls){return (urls||[]).length?urls.map((url,index)=>'<a href="'+ceEsc(url)+'" target="_blank" rel="noopener noreferrer">'+((urls.length>1)?'Abrir '+(index+1):'Abrir')+'</a>').join(' · '):'—';}
+function ceWorkDetailsMarkup(work,groups){const entries=ceWorkLeaves(work).map(item=>{const v=item.verificacao_obra||{};const ids=item.ids?.length?item.ids:(item.arquivos||[]).map(file=>String(file).match(/^(\d{1,9})[_\s-]/)?.[1]).filter(Boolean);const source=ceSourceLabel(v.fonte_nacionalidade);return {title:item.titulo||work.titulo,key:item.chave||'—',ids:ids.join(', ')||'—',country:v.nacionalidade_obra||'Pendente',found:source||(v.nacionalidade_obra?'Fonte não registrada':'Pendente'),refs:v.referencias||[]};});const ownKeys=new Set(entries.map(item=>String(item.key)));(groups||[]).forEach(group=>(group.membros||[]).forEach(member=>{if(!ownKeys.has(String(member.chave)))entries.push({title:member.titulo||'Obra sem título',key:member.chave||'—',ids:(member.ids||[]).join(', ')||'—',country:member.pais||'Pendente',found:member.pais_identificado_em||'Pendente',refs:member.referencias||[]});}));const rows=entries.map(item=>'<tr><td>'+ceEsc(item.title)+'</td><td>'+ceEsc(item.key)+'</td><td>'+ceEsc(item.ids)+'</td><td>'+ceEsc(item.country)+'</td><td>'+ceEsc(item.found)+'</td><td>'+ceExpandedReferenceLinks(item.refs)+'</td></tr>').join('');const heading=(groups||[]).length?((groups||[]).length+' grupo(s) de duplicatas relacionado(s)'):'Dados da obra';return '<div class="ce-expanded"><p class="ce-expanded-heading">'+ceEsc(heading)+'</p><div class="ce-expanded-wrap"><table class="ce-expanded-table"><thead><tr><th>Obra / registro relacionado</th><th>Chave</th><th>ID(s)</th><th>País de origem</th><th>País identificado em</th><th>Referência</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';}
+function ceToggleWorkDetails(button){const row=document.getElementById(button.getAttribute('aria-controls'));const expanded=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!expanded));row.hidden=expanded;}
+function ceTable(items,obrasMode=false,scope='table'){if(!items.length)return '<p class="muted">Nenhum registro disponível nesta categoria.</p>';
 const detailsHeader=obrasMode?'':'<th>Detalhes</th>';
-const reviewHeaders=obrasMode?'<th>Nacionalidade da obra</th><th>Protagonistas</th>':'';
-const refHeader=obrasMode?'<th>Referência</th>':'';
-return '<div class="tablewrap"><table><thead><tr><th>Obra</th><th>Autor</th>'+reviewHeaders+(obrasMode?'<th>Verificadas</th>':'')+'<th>Arquivos</th>'+refHeader+detailsHeader+'</tr></thead><tbody>'+items.map(g=>{let v=g.verificacao_obra||{};let author=obrasMode&&v.autor?v.autor:(g.autores.join(', ')||'Não informado');let ref=(v.referencias||[])[0];return '<tr><td><strong>'+ceEsc(g.titulo)+'</strong></td><td>'+ceEsc(author)+'</td>'+(obrasMode?'<td>'+ceEsc(v.nacionalidade_obra||'Pendente')+'</td><td>'+ceEsc((v.protagonistas||[]).join(' / ')||'Pendente')+'</td><td>'+ceEsc(ceVerifiedLabel(v.verificado_em))+'</td>':'')+'<td>'+g.quantidade+'</td>'+(obrasMode?'<td>'+(ref?'<a href="'+ceEsc(ref)+'" target="_blank" rel="noopener noreferrer">Abrir</a>':'—')+'</td>':'<td><details><summary style="cursor:pointer;color:#3457a5">Ver arquivos associados</summary><div style="padding:10px 0;max-width:550px">'+ceDetails(g)+'</div></details></td>')+'</tr>'}).join('')+'</tbody></table></div>';
+const reviewHeaders=obrasMode?'<th>País de origem</th><th>Protagonistas</th>':'';
+const columns=obrasMode?6:4;
+const body=items.map((g,index)=>{let v=g.verificacao_obra||{};let author=obrasMode&&v.autor?v.autor:(g.autores.join(', ')||'Não informado');if(!obrasMode)return '<tr><td><strong>'+ceEsc(g.titulo)+'</strong></td><td>'+ceEsc(author)+'</td><td>'+g.quantidade+'</td><td><details><summary style="cursor:pointer;color:#3457a5">Ver arquivos associados</summary><div style="padding:10px 0;max-width:550px">'+ceDetails(g)+'</div></details></td></tr>';const detailId=scope+'-details-'+index;return '<tr class="ce-data-row"><td><div class="ce-title-cell"><button type="button" class="ce-row-expander" aria-label="Expandir dados e possíveis duplicatas" title="Expandir dados e possíveis duplicatas" aria-expanded="false" aria-controls="'+detailId+'" onclick="ceToggleWorkDetails(this)"><span class="ce-chevron" aria-hidden="true">›</span></button><strong class="ce-title-text">'+ceEsc(g.titulo)+'</strong></div></td><td>'+ceEsc(author)+'</td><td>'+ceEsc(v.nacionalidade_obra||g.nacionalidade_obra||'Pendente')+'</td><td>'+ceEsc((v.protagonistas||g.protagonistas_obra||[]).join(' / ')||'Pendente')+'</td><td>'+ceEsc(g.verificadas_exibicao||ceVerifiedLabel(v.verificado_em))+'</td><td>'+g.quantidade+'</td></tr><tr id="'+detailId+'" class="ce-detail-row" hidden><td colspan="'+columns+'">'+ceWorkDetailsMarkup(g,ceDuplicateGroupsFor(g))+'</td></tr>';}).join('');
+return '<div class="tablewrap"><table class="ce-main-table"><thead><tr><th>Obra</th><th>Autor</th>'+reviewHeaders+(obrasMode?'<th>Verificadas</th>':'')+'<th>Arquivos</th>'+detailsHeader+'</tr></thead><tbody>'+body+'</tbody></table></div>';
 }
-function ceRender(){let q=(document.getElementById('ce-search')?.value||'').trim().toLowerCase();let works=CE_DATA.obras.filter(g=>!g.nacionalidade_confirmada&&[g.titulo,...g.titulos_alternativos,...g.autores,...g.arquivos,...(g.verificacao_obra?.protagonistas||[]),g.verificacao_obra?.autor||'',g.verificacao_obra?.nacionalidade_obra||'',JSON.stringify(g.itens_serie||[])].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.titulo.localeCompare(b.titulo,'pt-BR',{sensitivity:'base'}));
+function ceRender(){let q=(document.getElementById('ce-search')?.value||'').trim().toLowerCase();let matching=[...CE_DATA.obras,...CE_CATALOG_PENDING].filter(g=>!g.nacionalidade_confirmada&&[g.titulo,...g.titulos_alternativos,...g.autores,...g.arquivos,...(g.verificacao_obra?.protagonistas||[]),g.verificacao_obra?.autor||'',g.verificacao_obra?.nacionalidade_obra||'',JSON.stringify(g.itens_serie||[])].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.titulo.localeCompare(b.titulo,'pt-BR',{sensitivity:'base'}));let fanfics=matching.filter(ceIsFanfic),ordinary=matching.filter(g=>!ceIsFanfic(g));ceFanficCount=fanfics.length;let counts=new Map();ordinary.forEach(g=>{let author=ceAuthorFind(ceWorkAuthorAliases(g)[0]);counts.set(author,(counts.get(author)||0)+1)});ceAuthorCounts=[...counts].map(([key,count])=>[key,{...ceAuthorIndex.get(key),count}]).sort((a,b)=>a[1].label.localeCompare(b[1].label,'pt-BR',{sensitivity:'base'}));if(ceSelectedAuthor!=='__fanfic__'&&ceSelectedAuthor&&!counts.has(ceSelectedAuthor))ceSelectedAuthor='';if(ceSelectedAuthor==='__fanfic__'&&!ceFanficCount)ceSelectedAuthor='';let selectedInfo=ceAuthorIndex.get(ceSelectedAuthor);let label=ceSelectedAuthor==='__fanfic__'?'Fanfic ('+ceFanficCount+')':selectedInfo?selectedInfo.label+' ('+counts.get(ceSelectedAuthor)+')':'Todos os autores ('+ordinary.length+')';document.getElementById('ce-author-label').textContent=label;if(!document.getElementById('ce-author-menu').hidden)ceRenderAuthorOptions();let works=ceSelectedAuthor==='__fanfic__'?fanfics:ordinary.filter(g=>!ceSelectedAuthor||ceAuthorFind(ceWorkAuthorAliases(g)[0])===ceSelectedAuthor);
 let pages=Math.max(1,Math.ceil(works.length/cePageSize));cePage=Math.min(cePage,pages-1);let shown=works.slice(cePage*cePageSize,(cePage+1)*cePageSize);
-document.getElementById('ce-works').innerHTML='<p class="muted">'+works.length+' obras exibidas · '+CE_DATA.obras_transferidas+' transferidas ao Explorador por nacionalidade confirmada · '+CE_DATA.obras_revisadas_pendentes+' revisadas aguardando confirmação · '+CE_DATA.total_arquivos+' EPUBs válidos.</p>'+ceTable(shown,true)+'<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px"><button type="button" onclick="ceMove(-1)" '+(cePage===0?'disabled':'')+'>Anterior</button><span class="muted">Página '+(cePage+1)+' de '+pages+'</span><button type="button" onclick="ceMove(1)" '+(cePage>=pages-1?'disabled':'')+'>Próximo</button></div>';
+document.getElementById('ce-works').innerHTML='<p class="muted">'+works.length+' obras exibidas · '+CE_CATALOG_PENDING.length+' grupos pendentes do catálogo sem correspondência na varredura local · '+CE_DATA.obras_transferidas+' transferidas ao Explorador por nacionalidade confirmada · '+CE_DATA.obras_revisadas_pendentes+' revisadas aguardando confirmação · '+CE_DATA.total_arquivos+' EPUBs válidos.</p>'+ceTable(shown,true,'works')+'<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px"><button type="button" onclick="ceMove(-1)" '+(cePage===0?'disabled':'')+'>Anterior</button><span class="muted">Página '+(cePage+1)+' de '+pages+'</span><button type="button" onclick="ceMove(1)" '+(cePage>=pages-1?'disabled':'')+'>Próximo</button></div>';
 document.getElementById('ce-pending').innerHTML='<p class="muted">'+CE_DATA.pendentes.length+' agrupamentos pendentes. Identificação baseada apenas em evidências locais.</p>'+ceTable(CE_DATA.pendentes);
 document.getElementById('ce-problems').innerHTML='<p class="muted">'+CE_DATA.problemas.length+' falhas sem alternativa comprovadas. '+CE_DATA.problemas_indeterminados+' casos não classificáveis por falta de histórico completo de tentativas.</p>'+ceTable(CE_DATA.problemas);
 document.getElementById('ce-duplicates').innerHTML='<p class="muted">'+CE_DATA.duplicatas.length+' grupos com mais de um arquivo; '+CE_DATA.duplicatas_identificadas_catalogo.length+' grupos de título+autor repetidos entre os identificados no catálogo.</p>'+ceTable(CE_DATA.duplicatas);}
@@ -777,9 +981,16 @@ def main():
         previous=json.loads(prior.read_text(encoding='utf-8'))
         reviews={tuple(sorted(row.get('arquivos',[]))):row['verificacao_obra']
                  for row in previous.get('obras',[]) if row.get('verificacao_obra')}
+        previous_by_files={tuple(sorted(row.get('arquivos',[]))):row
+                           for row in previous.get('obras',[])}
         for row in works:
-            review=reviews.get(tuple(sorted(row.get('arquivos',[]))))
+            file_key=tuple(sorted(row.get('arquivos',[])))
+            review=reviews.get(file_key)
             if review:row['verificacao_obra']=review
+            curated=previous_by_files.get(file_key,{})
+            for field in ('titulo','titulos_alternativos','autores'):
+                value=curated.get(field)
+                if value:row[field]=value
     (out/'check_epub_obras.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
     report=out/'relatorio_telegram.html'
     if report.exists():
@@ -789,7 +1000,7 @@ def main():
         if '<!-- CHECK_EPUB_EXTRA_START -->' in old and backup.exists():
             old=backup.read_text(encoding='utf-8')
         if not backup.exists():shutil.copy2(report,backup)
-        report.write_text(inject_html(old,payload),encoding='utf-8')
+        report.write_text(inject_html(old,payload,root),encoding='utf-8')
     doc=root/'CHECK_EPUB_ESTADO_DO_PROJETO.md'
     doc.write_text(f'''# Check EPUB — estado consolidado\n\nAtualizado: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n## Objetivo e sequência\n\n1. Inventariar downloads locais e metadados EPUB (OPF e links XHTML).\n2. Agrupar cópias com evidência forte: SHA-256, identificadores NovelUpdates/JJWXC ou título+autor iguais.\n3. Preservar homônimos, edições e volumes ambíguos para cruzamento posterior.\n4. Somente depois pesquisar na Serper os casos ainda sem referência suficiente.\n\n## Entradas e saídas\n\n- Catálogo principal (somente leitura): `output/telegram_midias_apenas_epub_origens_v3_ptbr.csv` ({len(catalog)} registros).\n- Candidatos anteriores (somente leitura): `novelupdates_candidatos.json` ({len(candidates)} registros).\n- Varredura local: `output/check_epub_varredura.json` ({len(scanned)} arquivos).\n- Agrupamentos e evidências: `output/check_epub_obras.json` ({len(works)} grupos).\n- Painel offline: `output/relatorio_telegram.html`.\n- Backup do painel: `output/relatorio_telegram.html.bak_check_epub`.\n\n## Resumo desta execução\n\n- EPUBs locais varridos: **{len(scanned)}**.\n- Agrupamentos conservadores: **{len(works)}**.\n- Grupos de duplicatas com evidência (EPUBs baixados): **{len(duplicates)}**.\n- Grupos de possíveis duplicatas entre os já identificados no catálogo (título+autor): **{len(catalog_duplicates)}**.\n- Grupos baixados sem identificação confirmada (inclusive com URL NU ainda não validada): **{len(pending)}**.\n- Problemas comprovadamente sem solução: **não apurados**; requer histórico completo das ações e alternativas.\n- EPUBs com falha de leitura: **{sum(bool(r['erro']) for r in scanned)}**.\n\n## Regras e limitações\n\n- Um link interno é evidência/candidato, não confirmação definitiva de identidade.\n- A falta de um link não prova que a obra não existe no NovelUpdates.\n- Duplicação de título sem autor ou identificador não prova duplicação de obra.\n- A classificação 'problemas sem solução' exige histórico de tentativas e alternativas, não inferível apenas do CSV.\n- Nenhum EPUB, catálogo ou manifesto de downloads é alterado.\n- A varredura só cobre os EPUBs existentes na pasta indicada por `--epubs`.\n\n## Execução\n\n```bash\ncd ~/Documents/TI/Projetos/Extract_txt\npython3 ~/Downloads/check_epub_consolidar.py --projeto . --epubs /Volumes/Seagate2T/old/Check_Epub\n```\n\n## Pendências\n\n- Verificar a cobertura da pasta de downloads e os resultados do agrupamento.\n- Cruzar posteriormente metadados internos com candidatos do NovelUpdates.\n- Integrar o histórico das ações anteriores para comprovar falhas irrecuperáveis.\n''',encoding='utf-8')
     print('EPUBs varridos:',len(scanned),'| grupos:',len(works),'| duplicatas:',len(duplicates),'| pendentes:',len(pending))
