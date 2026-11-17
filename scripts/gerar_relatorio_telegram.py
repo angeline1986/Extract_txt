@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import csv
+import ast
 import json
 from pathlib import Path
 from collections import Counter
@@ -7,6 +8,22 @@ from datetime import datetime
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "output"
+
+COUNTRY_CODES = {
+    "CN": "China",
+    "KR": "Coreia do Sul",
+    "JP": "Japão",
+}
+
+def catalog_author(value):
+    value = str(value or "").strip()
+    try:
+        parsed = ast.literal_eval(value)
+    except (ValueError, SyntaxError):
+        parsed = value
+    if isinstance(parsed, (list, tuple)):
+        return " / ".join(str(item).strip() for item in parsed if str(item).strip())
+    return str(parsed or "").strip()
 
 def read_csv(path):
     with path.open(encoding="utf-8-sig", newline="") as f:
@@ -41,9 +58,18 @@ def main():
             "nome": r.get("nome_arquivo", ""),
             "titulo": r.get("titulo_normalizado", ""),
             "catalogo": r.get("titulo_catalogo", ""),
-            "autor": r.get("autor_catalogo", ""),
+            "autor": catalog_author(r.get("autor_catalogo", "")),
             "idioma": r.get("idioma_original", ""),
             "pais": r.get("pais_origem", ""),
+            "nacionalidade_obra": COUNTRY_CODES.get(
+                r.get("pais_origem", "").strip().upper(),
+                "Pendente" if r.get("pais_origem", "").strip().upper() == "INDEFINIDO"
+                else r.get("pais_origem", "").strip(),
+            ),
+            "fonte_nacionalidade_obra": r.get("fonte_verificacao", ""),
+            "referencia_obra": r.get("fonte_verificacao", ""),
+            "status_catalogo": r.get("status_verificacao", ""),
+            "evidencia_catalogo": r.get("evidencia", ""),
             "id": r.get("id_mensagem", ""),
             "data": r.get("data_utc", ""),
             "link": r.get("link_mensagem", "")
@@ -174,6 +200,11 @@ h1{font-size:30px;letter-spacing:-1px;margin:9px 0}
   border:1px solid #e6ecfb;border-radius:9px;
   color:#5b6c89;line-height:1.6;
 }
+.cherrymist-table{min-width:820px}
+.cherrymist-table th{text-align:center}
+.cherrymist-table td{vertical-align:top}
+.cherrymist-table a{color:#3457a5}
+.cherrymist-file{display:block;white-space:nowrap}
 .toolbar{
   display:flex;gap:10px;flex-wrap:wrap;
   margin-bottom:18px;
@@ -258,12 +289,13 @@ td{max-width:380px;overflow-wrap:anywhere}
 .novel-file-name{display:flex;align-items:center;gap:9px;min-width:0;overflow-wrap:anywhere}
 .novel-file-icon{flex:none;color:#718097;font-size:14px}
 .novel-file-id{flex:none;color:#718097;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.novel-summary-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:14px;color:#64748b;font-size:12px}
-.novel-summary-footer-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.novel-page-size{padding:7px 28px 7px 9px;border:1px solid #dfe5ee;border-radius:7px;background:#fff;color:#334155}
-.novel-summary-pager{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:auto}
-.novel-summary-pager button{display:grid;place-items:center;width:42px;height:38px;padding:0;border:1px solid #dceef7;border-radius:9px;background:#fff;color:#8296a5;font-size:14px;font-weight:500}
-.novel-summary-pager span{min-width:42px;text-align:center;color:#17425c;font-size:15px;font-variant-numeric:tabular-nums}
+.novel-summary-footer{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding-top:14px;color:#64748b;font-size:14px}
+.novel-summary-footer-left{display:flex;align-items:center;justify-self:start}
+.novel-page-size{padding:7px 28px 7px 9px;border:1px solid #dfe5ee;border-radius:7px;background:#fff;color:#64748b;font-size:14px}
+.novel-summary-range{justify-self:center;color:#64748b;font-size:14px;font-weight:400;font-variant-numeric:tabular-nums}
+.novel-summary-pager{display:flex;align-items:center;justify-content:flex-end;justify-self:end;gap:12px}
+.novel-summary-pager button{display:grid;place-items:center;width:42px;height:38px;padding:0;border:1px solid #dceef7;border-radius:9px;background:#fff;color:#64748b;font-size:14px;font-weight:400}
+.novel-summary-pager span{min-width:42px;text-align:center;color:#64748b;font-size:14px;font-weight:400;font-variant-numeric:tabular-nums}
 .novel-summary-pager button:disabled{opacity:.4;cursor:default}
 .data-row td{vertical-align:middle}
 .detail-row[hidden]{display:none!important}
@@ -303,7 +335,7 @@ td{max-width:380px;overflow-wrap:anywhere}
   .novel-country-list{max-height:240px}
 }
 @media(max-width:1000px){.novel-toolbar{align-items:stretch;flex-direction:column}.novel-toolbar-left,.novel-toolbar-right{justify-content:space-between;flex-wrap:wrap}.novel-search{width:100%;max-width:none;flex:1}.novel-custom-select{flex:1 1 180px}}
-@media(max-width:760px){.novel-summary-footer{align-items:stretch;flex-direction:column}.novel-summary-pager{gap:12px}}
+@media(max-width:760px){.novel-summary-footer{grid-template-columns:1fr 1fr;row-gap:10px}.novel-summary-footer-left{grid-column:1;grid-row:1}.novel-summary-range{grid-column:1 / -1;grid-row:2}.novel-summary-pager{grid-column:2;grid-row:1;gap:10px}}
 @media(max-width:640px){
   .primary-tabs{padding:0}
   .nav{padding:10px 11px;font-size:13px}
@@ -332,11 +364,8 @@ td{max-width:380px;overflow-wrap:anywhere}
   </div>
   <div class="panel">
     <h2>Cherrymist</h2>
-    <div class="notice">
-      Associação não verificada por catálogo.
-      Não é possível confirmar obras da Cherrymist
-      apenas pelo nome do arquivo.
-    </div>
+    <p class="muted" id="cherrymistSummary"></p>
+    <div class="tablewrap"><table class="cherrymist-table"><thead><tr><th>Obra no catálogo</th><th>Correspondência no inventário</th><th>Autor</th><th>País de origem</th><th>EPUB(s) / ID(s)</th></tr></thead><tbody id="cherrymistBody"></tbody></table></div>
   </div>
   </div>
   <div id="novelsPanel" class="hidden" role="tabpanel" aria-labelledby="nav-novels">
@@ -361,7 +390,7 @@ td{max-width:380px;overflow-wrap:anywhere}
           <div class="novel-toolbar-right"><button class="novel-export" type="button" onclick="exportNovelSummaryCSV()">Exportar CSV</button></div>
         </div>
         <div class="tablewrap"><table class="novel-summary-table"><thead><tr><th>Obra</th><th>Autor</th><th>Protagonistas</th><th>Nacionalidade</th><th>Qtd. EPUBs</th><th aria-label="Expandir"></th></tr></thead><tbody id="novelSummaryBody"></tbody></table></div>
-        <div class="novel-summary-footer"><div class="novel-summary-footer-left"><span id="novelSummaryRange"></span><label for="novelPageSize">Exibir:</label><select id="novelPageSize" class="novel-page-size" onchange="setNovelPageSize(this.value)"><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option><option>60</option></select></div><div class="novel-summary-pager"><button type="button" id="novelSummaryPrev" aria-label="Página anterior" onclick="moveNovelSummary(-1)">&lt;&lt;</button><span id="novelSummaryPageLabel"></span><button type="button" id="novelSummaryNext" aria-label="Próxima página" onclick="moveNovelSummary(1)">&gt;&gt;</button></div></div>
+        <div class="novel-summary-footer"><div class="novel-summary-footer-left"><select id="novelPageSize" class="novel-page-size" aria-label="Quantidade por página" onchange="setNovelPageSize(this.value)"><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option><option>60</option></select></div><span id="novelSummaryRange" class="novel-summary-range"></span><div class="novel-summary-pager"><button type="button" id="novelSummaryPrev" aria-label="Página anterior" onclick="moveNovelSummary(-1)">&lt;&lt;</button><span id="novelSummaryPageLabel"></span><button type="button" id="novelSummaryNext" aria-label="Próxima página" onclick="moveNovelSummary(1)">&gt;&gt;</button></div></div>
       </div>
     </div>
   </div>
@@ -444,7 +473,54 @@ function makeNovelGroups(records){
     return g;
   }).sort((a,b)=>a.title.localeCompare(b.title,'pt-BR',{sensitivity:'base'}));
 }
-const novelGroups=makeNovelGroups(DATA.records);
+function novelSeriesFamily(group){
+  const text=[group.title,...group.records.map(r=>r.obra_verificada||r.catalogo||r.titulo||'')].join(' ').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+  if(/fanfic|fanfiction/.test(text))return '';
+  if(/\bfor a thousand autum(?:n)?s\b/.test(text))return '';
+  const rules=[
+    ['Grandmaster of Demonic Cultivation',/grandmaster of demonic cultivation|mo dao zu shi/],
+    ['The Apothecary Diaries',/apothecary diaries/],['10 DANCE',/\b10 dance\b/],['Thousand Autumns',/thousand autumns|qian qiu/],
+    ['Hate Me, but Let Me Stay',/hate me but let me stay/],['The Moon on a Rainy Night',/moon on a rainy night/],['The Summer You Were There',/summer you were there/],
+    ['Joyful Reunion',/joyful reunion/],['Lullaby of the Dawn',/lullaby of the dawn/],['The Husky and His White Cat Shizun',/husky and his white cat shizun|erha he ta de bai mao/],
+    ['Dinghai Fusheng Records',/dinghai fusheng records/],['Peerless',/\bpeerless\b/],['World’s End Blue Bird',/world.s end blue bird/],['No God in Eden',/no god in eden/],
+    ['Remnants of Filth (Yuwu)',/remnants of filth|\byuwu\b/],['Run Away With Me, Girl',/run away with me girl/],['Run Wild (Sa Ye)',/run wild|\bsa ye\b/],
+    ['Stars of Chaos (Sha Po Lang)',/stars of chaos|sha po lang/],['Silent Reading (Mo Du)',/silent reading|\bmo du\b/],['The Dangerous Convenience Store',/dangerous convenience store/],
+    ['Three Hundred Years of Longing',/three hundred years of longing/],['Thrice Married to a Salted Fish',/thrice married to a salted fish/],['Ballad of Sword and Wine (Qiang Jin Jiu)',/ballad of sword and wine|qiang jin jiu/],
+    ['Case File Compendium (Bing An Ben)',/case file compendium|bing an ben/],['Guardian (Zhen Hun)',/guardian zhen hun|\bzhen hun\b/],
+    ['Legend of Exorcism (Tianbao Fuyao Lu)',/legend of exorcism|tianbao fuyao lu/],['Copper Coins (Tong Qian Kan Shi)',/copper coins|tong qian kan shi/],
+    ['The Wife Comes First (Qi Wei Shang)',/wife comes first|qi wei shang/],['Twin Jades of Jiangdong',/twin jades of jiangdong/],['Villains Are Destined to Die',/villains are destined to die/],
+    ['The Summer Hikaru Died',/summer hikaru died/],['You’ve Got Mail',/you.ve got mail|perils of pigeon post/],['Your Forma',/your forma|electronic investigator echika/],
+    ['The Disabled Tyrant’s Beloved Pet Fish',/disabled tyrant.s beloved pet fish|canji baojun de zhangxin yu/],['Secrets of the Silent Witch',/secrets of the silent witch/],
+    ['Lord of Mysteries',/lord of (?:the )?mysteries/],['Eiderdown',/\beiderdown\b/],['Golden Terrace',/golden terrace/],['Hell Is Dark with No Flowers',/hell is dark with no flowers/],
+    ['Hidden Love',/\bhidden love\b/],['Interminable',/\binterminable\b/],['Look at Me',/look at me/],['Love Between Fairy and Devil',/love between fairy and devil/],
+    ['Omniscient Reader’s Viewpoint',/omniscient readers? viewpoint/],['Panguan: The Twelfth Gate',/panguan|twelfth gate/],['The Only Sunflower I See Is You',/only sunflower i see is you/],
+    ['The Villain’s White Halo',/villain.s white halo/],['At the World’s Mercy',/at the world.s mercy/],['Deadman Switch',/deadman switch/],
+    ['Go For It, Nakamura!',/go for it(?: again)? nakamura/],['Earthian',/\bearthian\b/],['Megumi & Tsugumi',/megumi.*tsugumi/],['School Trip: Joined a Group I’m Not Close To',/school trip joined a group/],
+    ['Strawberry Panic!',/strawberry panic/],['Rose & Renaissance',/rose renaissance/],['Trascendiendo la Semilla del Mal',/trascendiendo la semilla del mal/],
+    ['The Scum Villain’s Self-Saving System',/scum villain.s self saving system|ren zha fanpai zijiu xitong|\bsvss\b/]
+  ];
+  for(const [label,pattern] of rules){if(pattern.test(text)){if(label==='The Scum Villain’s Self-Saving System'&&/bingjiu|fanfic|fanfiction/.test(text))return '';return label}}
+  return '';
+}
+function groupNovelSeries(groups){
+  const families=new Map();
+  groups.forEach(group=>{const family=novelSeriesFamily(group);if(!family)return;if(!families.has(family))families.set(family,[]);families.get(family).push(group)});
+  const consumed=new Set(),result=[];
+  for(const [family,members] of families){
+    if(members.length<2)continue;
+    members.forEach(member=>consumed.add(member));
+    const records=members.flatMap(member=>member.records);
+    const unique=values=>[...new Set(values.filter(Boolean))];
+    const authors=unique(members.flatMap(member=>member.authors));
+    const protagonists=unique(members.flatMap(member=>member.protagonistList));
+    const countries=unique(members.map(member=>member.country).filter(country=>country!=='Pendente'&&country!=='Não identificada'&&country!=='Conflito'));
+    const timestamps=unique(members.map(member=>member.verified).filter(value=>value&&value!=='Pendente'));
+    const titles=unique(members.flatMap(member=>[member.title,...member.records.map(r=>r.obra_verificada||r.catalogo||r.titulo||'')]).filter(title=>title&&title!==family));
+    result.push({key:'serie:'+family,title:family,records,authors,countries,protagonistList:protagonists,author:authors.join(' / ')||'—',protagonists:protagonists.join(' / ')||'—',country: new Set(members.map(member=>member.country).filter(value=>value!=='Pendente')).size>1&&countries.length>1?'Conflito':(countries[0]||members.find(member=>member.country==='Não identificada')?.country||'Pendente'),verified:timestamps[0]||'Pendente',alternateTitles:titles});
+  }
+  return [...groups.filter(group=>!consumed.has(group)),...result].sort((a,b)=>a.title.localeCompare(b.title,'pt-BR',{sensitivity:'base'}));
+}
+const novelGroups=groupNovelSeries(makeNovelGroups(DATA.records));
 let filtered=novelGroups.slice(),page=0,novelSummaryPage=0;
 const selectedNovelCountries=new Set();
 let novelQuantityFilter='all',selectedNovelAuthor='',selectedNovelProtagonist='';
@@ -496,10 +572,33 @@ function renderOriginsDonut(){
   });
 }
 renderOriginsDonut();
+const cherrymistCatalog=[
+  {title:'Binding Flower',url:'https://fullnovels.com/binding-flower/'},
+  {title:'Leveling Up in the Grand Duke’s Bed',url:'https://fullnovels.com/leveling-up-in-the-grand-dukes-bed/'},
+  {title:'Lumen Project',url:'https://fullnovels.com/lumen-project/'},
+  {title:'Reap What You Sow',url:'https://fullnovels.com/reap-what-you-sow/'}
+];
+function cherrymistTitleNorm(value){return String(value||'').toLocaleLowerCase('en').replace(/[’‘'`]/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
+function renderCherrymistMatches(){
+  const matches=cherrymistCatalog.map(item=>{
+    const target=cherrymistTitleNorm(item.title);
+    const records=DATA.records.filter(record=>[record.obra_verificada,record.catalogo,record.titulo,String(record.nome||'').replace(/\.epub$/i,'')].some(value=>value&&cherrymistTitleNorm(value)===target));
+    return {...item,records};
+  }).filter(item=>item.records.length);
+  $('cherrymistSummary').textContent=matches.length+' obras encontradas nos '+fmt(DATA.records.length)+' EPUBs do inventário, entre 710 títulos distintos do catálogo Cherrymist (712 registros).';
+  $('cherrymistBody').innerHTML=matches.map(item=>{
+    const inventoryTitles=[...new Set(item.records.map(record=>record.obra_verificada||record.catalogo||record.titulo||record.nome).filter(Boolean))];
+    const authors=[...new Set(item.records.map(record=>record.autor_obra||record.autor).filter(Boolean))];
+    const countries=[...new Set(item.records.map(record=>record.nacionalidade_obra||record.pais).filter(Boolean).map(countryName))];
+    const files=item.records.map(record=>'<span class="cherrymist-file">'+esc(record.nome||'Arquivo sem nome')+' · ID '+esc(record.id||'—')+'</span>').join('');
+    return '<tr><td><a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+'</a></td><td>'+esc(inventoryTitles.join(' / ')||'—')+'</td><td>'+esc(authors.join(' / ')||'—')+'</td><td>'+esc(countries.join(' / ')||'—')+'</td><td>'+files+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" class="muted">Nenhuma obra do catálogo foi encontrada no inventário.</td></tr>';
+}
+renderCherrymistMatches();
 function renderNovelSummary(){
   const query=$('novelSummarySearch').value.trim().toLocaleLowerCase('pt-BR');
   const rows=novelGroups.filter(g=>
-    (!query||g.title.toLocaleLowerCase('pt-BR').includes(query))&&
+    (!query||[g.title,...(g.alternateTitles||[]),...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])].filter(Boolean).some(value=>String(value).toLocaleLowerCase('pt-BR').includes(query)))&&
     (!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&
     (!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&
     (!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&
@@ -510,11 +609,11 @@ function renderNovelSummary(){
   $('novelSummaryBody').innerHTML=shown.map((g,index)=>{
     const detailId='novel-summary-detail-'+index;
     const pending=/^(pendente|não identificada|nao identificada)/i.test(g.country);
-    const files=g.records.map(r=>'<div class="novel-file-item"><span class="novel-file-name"><span class="novel-file-icon" aria-hidden="true">▤</span>'+esc(r.nome||'—')+'</span><span class="novel-file-id">ID #'+esc(r.id||'—')+'</span></div>').join('');
+    const files=g.records.map(r=>{const sourceTitle=r.obra_verificada||r.catalogo||r.titulo||'';return '<div class="novel-file-item"><span class="novel-file-name"><span class="novel-file-icon" aria-hidden="true">▤</span><span>'+((sourceTitle&&groupNorm(sourceTitle)!==groupNorm(g.title))?'<small>'+esc(sourceTitle)+'</small><br>':'')+esc(r.nome||'—')+'</span></span><span class="novel-file-id">ID #'+esc(r.id||'—')+'</span></div>'}).join('');
     return `<tr class="novel-summary-row" tabindex="0" aria-expanded="false" aria-controls="${detailId}" onclick="toggleNovelSummaryRow(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleNovelSummaryRow(this)}"><td><div class="novel-summary-title"><span>${esc(g.title)}</span></div></td><td>${esc(g.author==='—'?'Pendente':g.author)}</td><td>${esc(g.protagonists==='—'?'Pendente':g.protagonists)}</td><td><span class="novel-country-badge ${pending?'pending':''}">${esc(g.country)}</span></td><td><span class="novel-count-badge ${g.records.length>1?'multiple':''}">${fmt(g.records.length)}</span></td><td><span class="novel-summary-expand" aria-hidden="true">›</span></td></tr><tr id="${detailId}" class="novel-summary-detail" hidden><td colspan="6"><div class="novel-files"><div class="novel-file-list">${files}</div></div></td></tr>`;
-  }).join('')||'<tr><td colspan="5" class="muted">Nenhum grupo encontrado com esses filtros.</td></tr>';
+  }).join('')||'<tr><td colspan="6" class="muted">Nenhum grupo encontrado com esses filtros.</td></tr>';
   const end=Math.min(start+novelSummaryPageSize,rows.length);
-  $('novelSummaryRange').textContent=rows.length?'Exibindo '+fmt(start+1)+'–'+fmt(end)+' de '+fmt(rows.length)+' grupos':'0 grupos';
+  $('novelSummaryRange').textContent=rows.length?fmt(start+1)+'–'+fmt(end)+' de '+fmt(rows.length):'0 de 0';
   $('novelSummaryPageLabel').textContent=(novelSummaryPage+1)+' / '+pages;
   $('novelSummaryPrev').disabled=novelSummaryPage===0;$('novelSummaryNext').disabled=novelSummaryPage>=pages-1;
   $('novelPageSize').value=String(novelSummaryPageSize);
@@ -547,7 +646,7 @@ document.addEventListener('click',event=>{if(!event.target.closest('.novel-custo
 function toggleNovelSummaryRow(row){const detail=$(row.getAttribute('aria-controls'));const expanded=row.getAttribute('aria-expanded')==='true';row.setAttribute('aria-expanded',String(!expanded));detail.hidden=expanded}
 function exportNovelSummaryCSV(){
   const query=$('novelSummarySearch').value.trim().toLocaleLowerCase('pt-BR');
-  const groups=novelGroups.filter(g=>(!query||g.title.toLocaleLowerCase('pt-BR').includes(query))&&(!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&(!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&(!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&(novelQuantityFilter==='all'||(novelQuantityFilter==='one'?g.records.length===1:g.records.length>1)));
+  const groups=novelGroups.filter(g=>(!query||[g.title,...(g.alternateTitles||[]),...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])].filter(Boolean).some(value=>String(value).toLocaleLowerCase('pt-BR').includes(query)))&&(!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&(!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&(!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&(novelQuantityFilter==='all'||(novelQuantityFilter==='one'?g.records.length===1:g.records.length>1)));
   const cols=['Obra','Autor','Protagonistas','Nacionalidade','Quantidade de EPUBs','Arquivo EPUB','ID'];
   const quote=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
   const lines=[cols.join(';'),...groups.flatMap(g=>g.records.map(r=>[g.title,g.author==='—'?'Pendente':g.author,g.protagonists==='—'?'Pendente':g.protagonists,g.country,g.records.length,r.nome||'',r.id||''].map(quote).join(';')))];
@@ -566,7 +665,7 @@ function filterRecords(){
   const q=$('search').value.trim().toLocaleLowerCase();
   const n=$('nationality').value;
   filtered=novelGroups.filter(g=>
-    (!q||[g.title,g.author,g.country,g.protagonists,...g.records.map(r=>r.nome)]
+    (!q||[g.title,...(g.alternateTitles||[]),g.author,g.country,g.protagonists,...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])]
       .some(v=>String(v).toLocaleLowerCase().includes(q)))&&
     (!n||(n==='__nao_identificado__'
       ? ['pendente','não identificada','nao identificada','conflito'].includes(g.country.toLocaleLowerCase())
@@ -610,7 +709,7 @@ function duplicateDetailsMarkup(groups,record){
     '</tbody></table></div></div>';
 }
 function novelEpupsMarkup(g){
-  const rows=g.records.map(r=>'<tr><td>'+esc(r.nome||'—')+'</td><td>'+esc(r.id||'—')+'</td><td>'+esc(r.nacionalidade_obra||'Pendente')+'</td><td>'+esc(r.localizada_em||'Pendente')+'</td><td>'+referenceLinks(r.referencia_obra?[r.referencia_obra]:[] )+'</td></tr>').join('');
+  const rows=g.records.map(r=>{const sourceTitle=r.obra_verificada||r.catalogo||r.titulo||'';return '<tr><td>'+((sourceTitle&&groupNorm(sourceTitle)!==groupNorm(g.title))?'<strong>'+esc(sourceTitle)+'</strong><br>':'')+esc(r.nome||'—')+'</td><td>'+esc(r.id||'—')+'</td><td>'+esc(r.nacionalidade_obra||'Pendente')+'</td><td>'+esc(r.localizada_em||'Pendente')+'</td><td>'+referenceLinks(r.referencia_obra?[r.referencia_obra]:[] )+'</td></tr>'}).join('');
   return '<div class="detail-content"><p class="detail-heading">'+fmt(g.records.length)+' EPUB(s) associados a esta novel</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Arquivo EPUB</th><th>ID</th><th>País de origem</th><th>País identificado em</th><th>Referência</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function toggleExplorerDetails(button){

@@ -1,6 +1,6 @@
 # Check EPUB — estado consolidado
 
-Atualizado: 2026-11-17 15:32
+Atualizado: 2026-11-17 18:37
 
 ## Objetivo e sequência
 
