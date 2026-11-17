@@ -1108,9 +1108,31 @@ def main():
         # Existing generated HTML may contain previous CE panel; strip it before injecting.
         backup=report.with_suffix('.html.bak_check_epub')
         if '<!-- CHECK_EPUB_EXTRA_START -->' in old and backup.exists():
-            old=backup.read_text(encoding='utf-8')
+            candidate=backup.read_text(encoding='utf-8')
+            required=('id="primaryTabs"','</nav>','</main>','</body>','const DATA=')
+            if all(token in candidate for token in required):
+                old=candidate
+            else:
+                # Backup antigo incompleto: reconstruir a base a partir do HTML atual.
+                # Nunca sobrescrever nem apagar o backup original.
+                import re as _ce_re
+                for a,b in (
+                    ('<!-- CHECK_EPUB_OFICIAL_START -->','<!-- CHECK_EPUB_OFICIAL_END -->'),
+                    ('<!-- CHECK_EPUB_EXTRA_START -->','<!-- CHECK_EPUB_EXTRA_END -->'),
+                    ('<!-- CHECK_EPUB_SECTIONS_START -->','<!-- CHECK_EPUB_SECTIONS_END -->'),
+                    ('<!-- CHECK_EPUB_NAV_START -->','<!-- CHECK_EPUB_NAV_END -->'),
+                ):
+                    old=_ce_re.sub(_ce_re.escape(a)+r'.*?'+_ce_re.escape(b),'',old,flags=_ce_re.S)
+                old=_ce_re.sub(r'<!-- CHECK_EPUB_OFICIAL_NAV --><button[^>]*id="nav-oficial".*?</button>','',old,flags=_ce_re.S)
+                if not all(token in old for token in required):
+                    raise ValueError('Nao foi possivel reconstruir HTML base; arquivos preservados')
+                print('AVISO: backup HTML legado invalido; base recuperada do relatorio existente')
         if not backup.exists():shutil.copy2(report,backup)
         report.write_text(inject_html(old,payload,root),encoding='utf-8')
+        # CHECK_EPUB_OFICIAL_INTEGRACAO_V1
+        import subprocess as _of_subprocess
+        _of_subprocess.run([sys.executable, str(root/'scripts'/'check_epub_oficial.py'),
+                            '--projeto', str(root)], check=True)
     doc=root/'CHECK_EPUB_ESTADO_DO_PROJETO.md'
     doc.write_text(f'''# Check EPUB — estado consolidado\n\nAtualizado: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n## Objetivo e sequência\n\n1. Inventariar downloads locais e metadados EPUB (OPF e links XHTML).\n2. Agrupar cópias com evidência forte: SHA-256, identificadores NovelUpdates/JJWXC ou título+autor iguais.\n3. Preservar homônimos, edições e volumes ambíguos para cruzamento posterior.\n4. Somente depois pesquisar na Serper os casos ainda sem referência suficiente.\n\n## Entradas e saídas\n\n- Catálogo principal (somente leitura): `output/telegram_midias_apenas_epub_origens_v3_ptbr.csv` ({len(catalog)} registros).\n- Candidatos anteriores (somente leitura): `novelupdates_candidatos.json` ({len(candidates)} registros).\n- Varredura local: `output/check_epub_varredura.json` ({len(scanned)} arquivos).\n- Agrupamentos e evidências: `output/check_epub_obras.json` ({len(works)} grupos).\n- Painel offline: `output/relatorio_telegram.html`.\n- Backup do painel: `output/relatorio_telegram.html.bak_check_epub`.\n\n## Resumo desta execução\n\n- EPUBs locais varridos: **{len(scanned)}**.\n- Agrupamentos conservadores: **{len(works)}**.\n- Grupos de duplicatas com evidência (EPUBs baixados): **{len(duplicates)}**.\n- Grupos de possíveis duplicatas entre os já identificados no catálogo (título+autor): **{len(catalog_duplicates)}**.\n- Grupos baixados sem identificação confirmada (inclusive com URL NU ainda não validada): **{len(pending)}**.\n- Problemas comprovadamente sem solução: **não apurados**; requer histórico completo das ações e alternativas.\n- EPUBs com falha de leitura: **{sum(bool(r['erro']) for r in scanned)}**.\n\n## Regras e limitações\n\n- Um link interno é evidência/candidato, não confirmação definitiva de identidade.\n- A falta de um link não prova que a obra não existe no NovelUpdates.\n- Duplicação de título sem autor ou identificador não prova duplicação de obra.\n- A classificação 'problemas sem solução' exige histórico de tentativas e alternativas, não inferível apenas do CSV.\n- Nenhum EPUB, catálogo ou manifesto de downloads é alterado.\n- A varredura só cobre os EPUBs existentes na pasta indicada por `--epubs`.\n\n## Execução\n\n```bash\ncd ~/Documents/TI/Projetos/Extract_txt\npython3 ~/Downloads/check_epub_consolidar.py --projeto . --epubs /Volumes/Seagate2T/old/Check_Epub\n```\n\n## Pendências\n\n- Verificar a cobertura da pasta de downloads e os resultados do agrupamento.\n- Cruzar posteriormente metadados internos com candidatos do NovelUpdates.\n- Integrar o histórico das ações anteriores para comprovar falhas irrecuperáveis.\n''',encoding='utf-8')
     print('EPUBs varridos:',len(scanned),'| grupos:',len(works),'| duplicatas:',len(duplicates),'| pendentes:',len(pending))

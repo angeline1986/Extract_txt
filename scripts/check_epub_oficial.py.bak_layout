@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Adiciona a aba Oficial ao painel Check Epub sem tocar nas demais páginas.
+
+Uso: python3 scripts/check_epub_oficial.py --projeto .
+O catálogo é resolvido no navegador a partir do DATA.records já integrado ao HTML.
+Correspondências incertas permanecem separadas; podem ser confirmadas em
+output/oficial_decisions.json, campo `merges` (listas de obra_chave).
+"""
+import argparse
+import html
+import json
+import re
+from pathlib import Path
+
+START = '<!-- CHECK_EPUB_OFICIAL_START -->'
+END = '<!-- CHECK_EPUB_OFICIAL_END -->'
+NAV = '<!-- CHECK_EPUB_OFICIAL_NAV -->'
+
+CSS = r'''<style id="ce-oficial-styles">
+#oficial .of-filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+#oficial .of-filters input{flex:1;min-width:220px}
+#oficial .of-filters select,#oficial .of-filters input,#oficial .of-filters button{padding:10px;border-radius:8px;border:1px solid #dfe5ee;background:#fff;color:#26364d}
+#oficial .of-meta{margin:12px 0;color:#64748b;font-size:13px}
+#oficial .of-badge{display:inline-block;padding:3px 8px;border-radius:14px;background:#eef2ff;color:#3457a5;white-space:nowrap}
+#oficial .of-pending{background:#fff3dc;color:#a66a09}
+#oficial .of-table{min-width:780px}
+#oficial .of-table th{color:#506482}
+#oficial .of-table td{vertical-align:middle}
+#oficial .of-detail{background:#f8fafc;padding:14px 20px;overflow-x:auto}
+#oficial .of-detail table{min-width:740px}
+#oficial .of-detail td{font-size:12px}
+#oficial .of-warning{margin:8px 0;color:#9a6700;font-size:12px}
+#oficial .of-summary{font-size:13px;color:#64748b;margin:0 0 12px}
+</style>'''
+SECTION = r'''<section id="oficial" class="hidden" aria-labelledby="nav-oficial">
+<div class="eyebrow">Biblioteca / Catálogo independente</div>
+<h1>Oficial</h1>
+<p class="sub">Catálogo consolidado por identidade de obra. Agrupamentos ambíguos não são fundidos automaticamente.</p>
+<div class="panel">
+<div class="of-filters">
+<input id="of-search" placeholder="Buscar obra, alias, autor ou arquivo" oninput="ofPage=0;ofRender()" aria-label="Buscar no catálogo Oficial">
+<select id="of-country" onchange="ofPage=0;ofRender()" aria-label="Filtrar nacionalidade"><option value="">Todas as nacionalidades</option></select>
+<select id="of-status" onchange="ofPage=0;ofRender()" aria-label="Filtrar estado"><option value="">Todas</option><option value="confirmada">Nacionalidade identificada</option><option value="pendente">Nacionalidade pendente</option><option value="conflito">Conflito</option></select>
+<button type="button" onclick="ofExport()">Exportar CSV</button>
+</div>
+<div id="of-summary" class="of-summary"></div>
+<div class="tablewrap"><table class="of-table"><thead><tr><th>Obra</th><th>Autor</th><th>Protagonistas</th><th>Nacionalidade</th><th>EPUBs</th><th></th></tr></thead><tbody id="of-body"></tbody></table></div>
+<div class="pagination"><span id="of-range"></span><div><button id="of-prev" onclick="ofPage--;ofRender()">Anterior</button> <button id="of-next" onclick="ofPage++;ofRender()">Próximo</button></div></div>
+</div></section>'''
+# JS separate isolated closure, controls only #oficial and #nav-oficial.
+JS = r'''<script id="ce-oficial-script">
+(function(){'use strict';
+const $=id=>document.getElementById(id);
+const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+const pending=s=>!s||['pendente','não identificada','nao identificada','indefinido','não identificado','nao identificado','unknown','-'].includes(norm(s));
+const volume=s=>norm(String(s||'').replace(/\b(?:vol(?:ume)?|book|livro|tomo)\.?\s*\d+\b/ig,'').replace(/\b(?:chapters?|cap[ií]tulos?)\s*\d+\s*(?:[-–]\s*\d+)?\b/ig,''));
+const items=Array.isArray(window.DATA?.records)?window.DATA.records:typeof DATA!=='undefined'?DATA.records:[];
+const decisions=__DECISIONS__;
+const byKey=new Map(),parent=new Map();
+function keyOf(r,i){return String(r.obra_chave||'').trim()||'epub:'+String(r.id||i)}
+function root(k){let p=parent.get(k)||k;if(p!==k){p=root(p);parent.set(k,p)}return p}
+function union(a,b){a=root(a);b=root(b);if(a!==b)parent.set(b,a)}
+items.forEach((r,i)=>{let k=keyOf(r,i);parent.set(k,k);if(!byKey.has(k))byKey.set(k,[]);byKey.get(k).push(r)});
+// Explicitly approved equivalences; no fuzzy automatic union.
+for(const group of decisions.merges||[]){if(!Array.isArray(group)||group.length<2)continue;const keys=group.map(String);if(keys.every(k=>byKey.has(k)))for(const k of keys.slice(1))union(keys[0],k)}
+const canonical=(r)=>r.obra_verificada||r.catalogo||r.titulo||r.nome||'Sem título';
+const author=(r)=>r.autor_obra||r.autor||'';
+const country=(r)=>r.nacionalidade_obra||'';
+// High-confidence deterministic grouping: same known series reference OR same title+author.
+// A reference is trusted for equality only if it is a series page, never a generic site/author page.
+function ref(r){const raw=String(r.referencia_obra||r.fonte_nacionalidade_obra||'');try{const u=new URL(raw);const h=u.hostname.replace(/^www\./,'').toLowerCase();const p=u.pathname.replace(/\/$/,'').toLowerCase();if(h==='novelupdates.com'&&/^\/series\/[^/]+$/.test(p))return h+p;if(h==='jjwxc.net'&&p.includes('onebook.php')&&u.searchParams.get('novelid'))return h+'/onebook.php?novelid='+u.searchParams.get('novelid');}catch(e){}return ''}
+const references=new Map(),exact=new Map();
+for(const [key,rs] of byKey){const refs=new Set(rs.map(ref).filter(Boolean));for(const r of refs){if(references.has(r))union(key,references.get(r));else references.set(r,key)}const titles=new Set(rs.flatMap(r=>[canonical(r),r.catalogo,r.titulo].map(volume).filter(x=>x.length>=9)));const authors=new Set(rs.map(r=>norm(author(r))).filter(Boolean));if(authors.size===1){const a=[...authors][0];for(const t of titles){const k=t+'|'+a;if(exact.has(k))union(key,exact.get(k));else exact.set(k,key)}}}
+const groups=new Map();for(const [key,rs] of byKey){const k=root(key);if(!groups.has(k))groups.set(k,{keys:[],records:[]});groups.get(k).keys.push(key);groups.get(k).records.push(...rs)}
+let works=[...groups].map(([id,g])=>{const rs=[...new Map(g.records.map((r,i)=>[String(r.id||'')||'file:'+r.nome+':'+i,r])).values()];const verified=rs.filter(r=>r.obra_verificada);const first=verified[0]||rs[0];const countries=[...new Set(rs.map(country).filter(x=>!pending(x)))];const c=countries.length>1?'Conflito':countries[0]||'Pendente';const authors=[...new Set(rs.map(author).filter(Boolean))];const prot=[...new Set(rs.flatMap(r=>Array.isArray(r.protagonistas_obra)?r.protagonistas_obra:[]).filter(Boolean))];const aliases=[...new Set(rs.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome].filter(Boolean)))];return{id,title:canonical(first),authors,protagonists:prot,country:c,aliases,records:rs,keys:g.keys,status:c==='Conflito'?'conflito':pending(c)?'pendente':'confirmada'}});
+works.sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'));
+let ofPage=0;const pageSize=20;window.ofPage=0;
+function matching(){const q=norm($('of-search').value),c=$('of-country').value,s=$('of-status').value;return works.filter(g=>(!q||[g.title,...g.aliases,...g.authors,...g.protagonists,...g.records.map(r=>r.nome)].some(x=>norm(x).includes(q)))&&(!c||g.country===c)&&(!s||g.status===s))}
+function ofRender(){ofPage=window.ofPage||0;const matches=matching();const pages=Math.max(1,Math.ceil(matches.length/pageSize));ofPage=Math.max(0,Math.min(ofPage,pages-1));window.ofPage=ofPage;const selected=matches.slice(ofPage*pageSize,(ofPage+1)*pageSize);$('of-body').innerHTML=selected.map((g,i)=>{const uid='of-detail-'+ofPage+'-'+i;return '<tr><td><strong>'+escape(g.title)+'</strong></td><td>'+escape(g.authors.join(' / ')||'Pendente')+'</td><td>'+escape(g.protagonists.join(' / ')||'—')+'</td><td><span class="of-badge '+(g.status==='pendente'?'of-pending':'')+'">'+escape(g.country)+'</span></td><td>'+g.records.length+'</td><td><button type="button" class="row-expander" aria-expanded="false" aria-controls="'+uid+'" onclick="ofToggle(this)">›</button></td></tr><tr id="'+uid+'" hidden><td colspan="6"><div class="of-detail"><div><b>IDs de obras:</b> '+escape(g.keys.join(', '))+'</div><div><b>Títulos e aliases:</b> '+escape(g.aliases.join(' / '))+'</div>'+(g.status==='conflito'?'<div class="of-warning">Nacionalidades conflitantes: revisar antes de confirmar.</div>':'')+'<table><thead><tr><th>ID mensagem</th><th>Arquivo</th><th>Título identificado</th><th>Nacionalidade original</th></tr></thead><tbody>'+g.records.map(r=>'<tr><td>'+escape(r.id)+'</td><td>'+escape(r.nome)+'</td><td>'+escape(canonical(r))+'</td><td>'+escape(country(r)||'Pendente')+'</td></tr>').join('')+'</tbody></table></div></td></tr>'}).join('')||'<tr><td colspan="6">Nenhuma obra encontrada</td></tr>';
+$('of-summary').textContent=works.length+' obras consolidadas · '+works.reduce((n,g)=>n+g.records.length,0)+' EPUBs únicos por ID · '+works.filter(g=>g.status==='pendente').length+' pendentes · '+works.filter(g=>g.status==='conflito').length+' conflitos';$('of-range').textContent=matches.length+' resultados · página '+(ofPage+1)+' de '+pages;$('of-prev').disabled=ofPage===0;$('of-next').disabled=ofPage>=pages-1}
+function ofToggle(button){const row=$(button.getAttribute('aria-controls'));row.hidden=!row.hidden;button.setAttribute('aria-expanded',String(!row.hidden))}
+function ofExport(){const headers=['obra_id','obra','autor','protagonistas','nacionalidade','status','epub_id','arquivo','obra_origem'];const data=[headers,...matching().flatMap(g=>g.records.map(r=>[g.id,g.title,g.authors.join(' / '),g.protagonists.join(' / '),g.country,g.status,r.id||'',r.nome||'',r.obra_chave||'']))];const csv='\ufeff'+data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='check_epub_oficial.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+window.ofRender=ofRender;window.ofToggle=ofToggle;window.ofExport=ofExport;
+const countries=[...new Set(works.map(g=>g.country))].sort((a,b)=>a.localeCompare(b,'pt-BR'));$('of-country').insertAdjacentHTML('beforeend',countries.map(c=>'<option value="'+escape(c)+'">'+escape(c)+'</option>').join(''));
+// Take over only the new nav click. Legacy navigation remains untouched.
+const nav=$('nav-oficial');nav.addEventListener('click',()=>{for(const id of ['overview','explorer','works','pending','problems','duplicates'])$(id)?.classList.add('hidden');$('oficial').classList.remove('hidden');document.querySelectorAll('.primary-tabs .nav').forEach(x=>x.classList.toggle('active',x===nav));location.hash='oficial';ofRender()});
+for(const button of document.querySelectorAll('.primary-tabs .nav:not(#nav-oficial)'))button.addEventListener('click',()=>{$('oficial').classList.add('hidden')});
+window.addEventListener('hashchange',()=>{if(location.hash==='#oficial')nav.click();else $('oficial').classList.add('hidden')});
+if(location.hash==='#oficial')nav.click();else ofRender();
+})();
+</script>'''
+
+def inject(content, decisions):
+    # Idempotent and forward compatible with both original and CE-enhanced report.
+    content = re.sub(r'\s*' + re.escape(START) + r'.*?' + re.escape(END) + r'\s*', '', content, flags=re.S)
+    content = re.sub(r'\s*(?:' + re.escape(NAV) + r')?<button[^>]*id="nav-oficial".*?</button>\s*', '', content, flags=re.S)
+    content = content.replace(NAV, '')
+    anchor = '</nav>'
+    if 'id="primaryTabs"' not in content or anchor not in content or 'const DATA=' not in content:
+        raise ValueError('HTML do Check Epub não reconhecido; nenhum arquivo alterado')
+    nav = NAV + '<button class="nav" id="nav-oficial" type="button" title="Oficial"><span class="navlabel">Oficial</span></button>'
+    content = content.replace(anchor, nav + '\n' + anchor, 1)
+    block = START + CSS + SECTION + JS.replace('__DECISIONS__', json.dumps(decisions, ensure_ascii=False).replace('<','\\u003c')) + END
+    content = content.replace('</body>',block+'\n</body>',1)
+    return content
+
+def main(argv=None):
+    p=argparse.ArgumentParser()
+    p.add_argument('--projeto',type=Path,default=Path.cwd())
+    p.add_argument('--html',type=Path)
+    args=p.parse_args(argv)
+    project=args.projeto.expanduser().resolve()
+    path=args.html or project/'output'/'relatorio_telegram.html'
+    if not path.exists():p.error(f'HTML não encontrado: {path}')
+    dp=project/'output'/'oficial_decisions.json'
+    decisions=json.loads(dp.read_text(encoding='utf-8')) if dp.exists() else {'merges':[]}
+    if not isinstance(decisions,dict) or not isinstance(decisions.get('merges'),list):p.error('Formato inválido de oficial_decisions.json')
+    source=path.read_text(encoding='utf-8')
+    changed=inject(source,decisions)
+    # Atomic write, no temporary backup of huge HTML unless requested by user.
+    tmp=path.with_name(path.name+'.oficial_tmp')
+    tmp.write_text(changed,encoding='utf-8');tmp.replace(path)
+    print('Oficial instalada:',path,'| merges aprovados:',len(decisions['merges']))
+if __name__=='__main__':main()
