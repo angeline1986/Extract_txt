@@ -914,12 +914,23 @@ def load_author_aliases(root):
     return aliases
 
 def apply_author_aliases(records, aliases):
-    for record in records:
-        for field in ('autor','autor_obra'):
-            value=record.get(field)
-            if isinstance(value,str):
-                key=unicodedata.normalize('NFC',value)
-                record[field]=aliases.get(key,value)
+    apply_author_aliases_to_payload(records,aliases)
+
+def apply_author_aliases_to_payload(value, aliases):
+    if isinstance(value,dict):
+        for field,item in value.items():
+            if field in ('autor','autor_obra') and isinstance(item,str):
+                value[field]=aliases.get(unicodedata.normalize('NFC',item),item)
+            elif field=='autores' and isinstance(item,list):
+                value[field]=[
+                    aliases.get(unicodedata.normalize('NFC',name),name)
+                    if isinstance(name,str) else name for name in item
+                ]
+            else:
+                apply_author_aliases_to_payload(item,aliases)
+    elif isinstance(value,list):
+        for item in value:
+            apply_author_aliases_to_payload(item,aliases)
 
 def inject_html(original, payload, root):
     start='<!-- CHECK_EPUB_EXTRA_START -->';end='<!-- CHECK_EPUB_EXTRA_END -->'
@@ -1139,6 +1150,7 @@ def inject_html(original, payload, root):
         not known_review(row.get('verificacao_obra'))
         for row in payload.get('obras',[])
     )
+    apply_author_aliases_to_payload(display_payload,author_aliases)
     nav='''<button class="nav" id="nav-works" onclick="ceNavigate('works')" title="Obras"><span class="navicon">▤</span><span class="navlabel">Obras</span></button>'''
     if '</nav>' not in original or 'id="primaryTabs"' not in original or '</main>' not in original or '</body>' not in original:raise ValueError('Estrutura HTML inesperada; não alterada')
     original=original.replace('</nav>','<!-- CHECK_EPUB_NAV_START -->\n'+nav+'\n<!-- CHECK_EPUB_NAV_END -->\n</nav>',1)
@@ -1248,6 +1260,8 @@ def main():
     ap.add_argument('--epubs',type=Path,help='Pasta de EPUBs baixados (varredura recursiva)')
     ap.add_argument('--somente-html',action='store_true',help='Reusar varredura já salva')
     args=ap.parse_args();root=args.projeto.expanduser().resolve()
+    if (root/'RELATORIO_HTML_PROTEGIDO.md').exists():
+        ap.error('Relatório protegido: consolidação interrompida para preservar as correções atuais.')
     if not (root/'output').is_dir():ap.error('Pasta output/ não encontrada no projeto')
     out=root/'output';scanfile=out/'check_epub_varredura.json'
     csvpath=out/'telegram_midias_apenas_epub_origens_v3_ptbr.csv'
@@ -1343,6 +1357,7 @@ def main():
         apply_cheonchusein_work(work)
         apply_zhichu_survivorship_work(work)
         apply_verified_title_corrections_work(work)
+    apply_author_aliases_to_payload(payload,load_author_aliases(root))
     (out/'check_epub_obras.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
     report=out/'relatorio_telegram.html'
     if report.exists():

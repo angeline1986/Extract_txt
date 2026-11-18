@@ -268,6 +268,8 @@ def main(argv=None):
     p.add_argument('--html',type=Path)
     args=p.parse_args(argv)
     project=args.projeto.expanduser().resolve()
+    if (project/'RELATORIO_HTML_PROTEGIDO.md').exists():
+        p.error('Relatório protegido: atualização interrompida para preservar as correções atuais.')
     path=args.html or project/'output'/'relatorio_telegram.html'
     if not path.exists():p.error(f'HTML não encontrado: {path}')
     dp=project/'output'/'oficial_decisions.json'

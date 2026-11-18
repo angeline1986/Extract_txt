@@ -43,6 +43,8 @@ def status_of(row):
     return "outro"
 
 def main():
+    if (ROOT / "RELATORIO_HTML_PROTEGIDO.md").exists():
+        raise SystemExit("Relatório protegido: geração interrompida para preservar as correções atuais.")
     files = sorted(OUTPUT.glob("*origens*ptbr.csv"))
     if not files:
         files = sorted(OUTPUT.glob("*origens*.csv"))
