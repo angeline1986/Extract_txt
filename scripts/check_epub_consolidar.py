@@ -136,6 +136,99 @@ def apply_zhichu_survivorship_record(record):
     record['autor']=ZHICHU_AUTHOR
     record['autor_obra']=ZHICHU_AUTHOR
 
+VERIFIED_TITLE_RECORD_IDS={
+    '55067','92142','75152','74733','60264',
+    '52701','52702','52703','52704','38644','38645','38646','38647',
+    '66126','83823',
+}
+
+def apply_verified_title_corrections(record):
+    record_id=str(record.get('id','')).strip()
+    if record_id not in VERIFIED_TITLE_RECORD_IDS:return False
+    if record_id=='55067':
+        record.update({
+            'catalogo':'The Dangerous Convenience Store','autor':'945','idioma':'korean','pais':'KR',
+            'status_catalogo':'identificado',
+            'evidencia_catalogo':'Correção de correspondência: The Dangerous Convenience Store é a obra coreana de 945; não corresponde a The Wild Deer Convenience Store, de Xu Weijüquan.',
+            'obra_verificada':'The Dangerous Convenience Store','obra_chave':'obra_01805',
+            'autor_obra':'945','nacionalidade_obra':'Coreia do Sul',
+            'protagonistas_obra':['Yeo Eui-joon','Gunwoo'],'tipo_obra':'Manhwa / Webtoon',
+            'fonte_nacionalidade_obra':'https://www.lezhinus.com/en/comic/dangerous_store',
+            'referencia_obra':'https://www.lezhinus.com/en/comic/dangerous_store',
+            'localizada_em':'Lezhin Comics','verificadas':'17/11/2026',
+        })
+    elif record_id in {'92142','75152','74733','60264'}:
+        record.update({
+            'catalogo':'There’s Something Wrong with the Chief: Du Zhu You Bing',
+            'autor':'Yang Su (杨溯)','idioma':'chinese','pais':'CN','status_catalogo':'identificado',
+            'evidencia_catalogo':'Correção de correspondência: obra de Yang Su; não corresponde a There’s Something Wrong With This Account, de Kindergarten Expert.',
+            'obra_verificada':'There’s Something Wrong with the Chief: Du Zhu You Bing',
+            'autor_obra':'Yang Su (杨溯)','nacionalidade_obra':'China',
+            'protagonistas_obra':['Xiahou Lian','Xie Jinglan'],
+            'fonte_nacionalidade_obra':'https://sevenseasentertainment.com/series/theres-something-wrong-with-the-chief-du-zhu-you-bing-novel/',
+            'referencia_obra':'https://sevenseasentertainment.com/series/theres-something-wrong-with-the-chief-du-zhu-you-bing-novel/',
+            'localizada_em':'Seven Seas','verificadas':'17/11/2026',
+        })
+    elif record_id in {'52701','52702','52703','52704','38644','38645','38646','38647'}:
+        record.update({
+            'catalogo':'Rose and Renaissance','autor':'Zhichu (稚楚)','idioma':'chinese','pais':'CN',
+            'status_catalogo':'identificado',
+            'evidencia_catalogo':'Título e autoria confirmados no registro da obra original; autora Zhichu (稚楚).',
+            'obra_verificada':'Rose and Renaissance','obra_chave':'obra_00943',
+            'autor_obra':'Zhichu (稚楚)','nacionalidade_obra':'China',
+            'protagonistas_obra':['Xia Xiqing (夏习清)','Zhou Ziheng (周自珩)'],
+            'fonte_nacionalidade_obra':'https://www.jjwxc.net/onebook.php?novelid=3828175',
+            'referencia_obra':'https://books.google.com/books/about/Rose_and_Renaissance_Volume_1.html?id=QvKTzwEACAAJ',
+            'localizada_em':'JJWXC / Google Books','verificadas':'17/11/2026',
+        })
+    elif record_id=='66126':
+        record.update({
+            'catalogo':'Tokyo Ghoul','autor':'Sui Ishida','idioma':'japanese','pais':'JP',
+            'status_catalogo':'identificado',
+            'evidencia_catalogo':'Identidade e autoria confirmadas pela página oficial da VIZ; Sui Ishida nasceu no Japão.',
+            'obra_verificada':'Tokyo Ghoul','obra_chave':'obra:tokyo-ghoul',
+            'autor_obra':'Sui Ishida','nacionalidade_obra':'Japão','tipo_obra':'Mangá',
+            'fonte_nacionalidade_obra':'https://www.viz.com/tokyo-ghoul',
+            'referencia_obra':'https://www.viz.com/tokyo-ghoul',
+            'localizada_em':'VIZ','verificadas':'17/11/2026',
+        })
+    elif record_id=='83823':
+        record.update({
+            'catalogo':'Doll (人偶)','autor':'Ali Rabbit (阿哩兔)','idioma':'chinese','pais':'CN',
+            'status_catalogo':'identificado','obra_verificada':'Doll (人偶)',
+            'autor_obra':'Ali Rabbit (阿哩兔)','nacionalidade_obra':'China','obra_chave':'obra_01954',
+            'tipo_obra':'Web novel','fonte_nacionalidade_obra':'https://www.novelupdates.com/series/doll/',
+            'referencia_obra':'https://www.novelupdates.com/series/doll/',
+            'localizada_em':'Novel Updates','verificadas':'17/11/2026',
+        })
+    return True
+
+def apply_verified_title_corrections_work(work):
+    ids={str(value).strip() for value in work.get('ids',[]) if str(value).strip()}
+    ids.update(match.group(1) for filename in work.get('arquivos',[])
+               if (match:=re.match(r'^(\d{1,9})[_\s-]',Path(str(filename)).name)))
+    for record_id in ids:
+        correction={'id':record_id}
+        if not apply_verified_title_corrections(correction):continue
+        title=correction.get('obra_verificada')
+        author=correction.get('autor_obra')
+        country=correction.get('nacionalidade_obra')
+        source=correction.get('fonte_nacionalidade_obra','')
+        work.update({'chave':correction.get('obra_chave',work.get('chave','')),
+                     'titulo':title,'autores':[author] if author else work.get('autores',[]),
+                     'identificada':True,'nacionalidade_conhecida':bool(country)})
+        review=work.setdefault('verificacao_obra',{})
+        review.update({'autor':author,'nacionalidade_obra':country,
+                       'protagonistas':correction.get('protagonistas_obra',review.get('protagonistas',[])),
+                       'referencias':[correction.get('referencia_obra','')] if correction.get('referencia_obra') else [],
+                       'fonte_nacionalidade':source,
+                       'criterio_nacionalidade':correction.get('evidencia_catalogo',''),
+                       'metodo':'Correção de identidade e origem baseada em referência editorial ou ficha da obra original.',
+                       'verificado_em':'2026-11-17'})
+        if correction.get('tipo_obra'):
+            review['tipo_obra']=correction['tipo_obra']
+        return
+
 def title_guess(name):
     s=Path(name).stem
     s=re.sub(r'^\d{4,9}[_\s-]+','',s)
@@ -454,7 +547,7 @@ _EXPLICIT_PRESENTATION_GROUPS = {
     'The Trashy PD Has To Survive as an Idol': ('obra_02975','obra_02976'),
     'This Venerable One Really Didn’t Abandon My Familiar': ('obra_02719','obra_02721'),
     'Tsuki ga Michibiku Isekai Douchuu': ('obra_02753','obra_02754','obra_02755','obra_02756','obra_02757','obra_02758','obra_02759','obra_02760','obra_02761','obra_02762','obra_02763','obra_02764','obra_02765','obra_02766','obra_02767','obra_02768','obra_02769','obra_02770','obra_02771'),
-    'There’s Something Wrong With This Account': ('obra_02842','obra_01069'),
+    'There’s Something Wrong with the Chief: Du Zhu You Bing': ('obra_02842','obra_01069'),
     'Waiting For You Online': ('obra_00703','obra_02726'),
     'When Two Alphas Meet, One’s an Omega': ('obra_01443','obra_02920','obra_02814'),
     'Turning': ('obra_02102','obra_00547','obra_01491','obra_01695','obra_00438','obra_00953'),
@@ -844,6 +937,7 @@ def inject_html(original, payload, root):
     for work in payload.get('obras',[]):
         apply_cheonchusein_work(work)
         apply_zhichu_survivorship_work(work)
+        apply_verified_title_corrections_work(work)
     works_by_key={str(work.get('chave','')):work for work in payload.get('obras',[])}
     duplicate_groups=duplicate_report_groups(
         root/'output'/'relatorio_completo_obras_duplicadas.txt',works_by_key)
@@ -856,6 +950,7 @@ def inject_html(original, payload, root):
     for record in report_data.get('records',[]):
         apply_cheonchusein_record(record)
         apply_zhichu_survivorship_record(record)
+        apply_verified_title_corrections(record)
         record['duplicatas_relatorio']=duplicate_groups_by_id.get(str(record.get('id','')),[])
     apply_author_aliases(report_data.get('records',[]),author_aliases)
     confirmed_files=set();confirmed_epub_ids=set();country_counts=Counter();country_epub_ids=defaultdict(set)
@@ -991,9 +1086,17 @@ def inject_html(original, payload, root):
             if is_confirmed:
                 confirmed_epub_ids.add(record_id)
                 country_epub_ids[nationality].add(record_id)
+    manually_verified_work_countries={}
     for record in report_data.get('records',[]):
         apply_cheonchusein_record(record)
         apply_zhichu_survivorship_record(record)
+        if apply_verified_title_corrections(record):
+            record_id=str(record.get('id','')).strip()
+            if record_id:
+                confirmed_epub_ids.add(record_id)
+                country_epub_ids[country_name(record.get('nacionalidade_obra','Pendente'))].add(record_id)
+            title_key=norm(record.get('obra_verificada') or record.get('titulo',''))
+            if title_key:manually_verified_work_countries[title_key]=country_name(record.get('nacionalidade_obra','Pendente'))
     # Count reviewed works using the same presentation grouping as Obras.
     # The EPUB count below still counts every associated file in the Explorer.
     for work in display_rows:
@@ -1002,6 +1105,13 @@ def inject_html(original, payload, root):
         nationality=country_name(review.get('nacionalidade_obra') or 'Pendente')
         country_counts[nationality]+=1
         confirmed_work_keys.add(str(work.get('chave') or work.get('titulo') or ''))
+    displayed_work_titles={norm(work.get('titulo','')) for work in display_rows
+                           if known_review(work.get('verificacao_obra') or {})}
+    for title_key,nationality in manually_verified_work_countries.items():
+        if title_key and title_key not in displayed_work_titles:
+            country_counts[nationality]+=1
+            confirmed_work_keys.add('manual:'+title_key)
+            displayed_work_titles.add(title_key)
     report_data['obra_origins']={
         'work_count':len(confirmed_work_keys),
         'epub_count':len(confirmed_epub_ids),
@@ -1232,6 +1342,7 @@ def main():
     for work in payload.get('obras',[]):
         apply_cheonchusein_work(work)
         apply_zhichu_survivorship_work(work)
+        apply_verified_title_corrections_work(work)
     (out/'check_epub_obras.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
     report=out/'relatorio_telegram.html'
     if report.exists():
