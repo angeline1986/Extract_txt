@@ -39,6 +39,103 @@ def country_name(value):
     }
     return canonical.get(key,raw)
 
+CHEONCHUSEIN_ID='72590'
+CHEONCHUSEIN_KEY='obra_01422'
+CHEONCHUSEIN_FILE='72590_For a Thousand Autums - Lanmaru.epub'
+CHEONCHUSEIN_TITLE='For a Thousand Autumns'
+CHEONCHUSEIN_NU='https://www.novelupdates.com/series/celestial/'
+CHEONCHUSEIN_MANTA='https://manta.net/en/series/for-a-thousand-autumns-full-ver?seriesId=3467'
+CHEONCHUSEIN_MANHWA='https://mangabaka.org/manhwa/92028/For-a-Thousand-Autumns'
+CHEONCHUSEIN_AUTHORS='Lanmaru (novel), Gilmong e Boogie (arte)'
+CHEONCHUSEIN_PROTAGONISTS=['Moonpyeong Seok','Demônio Celestial']
+CHEONCHUSEIN_ORIGINAL='Cheonchusein (천추세인)'
+CHEONCHUSEIN_SYNOPSIS='Um membro de baixo escalão da Seita Demoníaca vira guarda-costas do líder em uma disputa de sucessão.'
+ZHICHU_SURVIVORSHIP_ID='79462'
+ZHICHU_SURVIVORSHIP_KEY='obra_01741'
+ZHICHU_AUTHOR='稚楚 (Zhichu)'
+
+def is_cheonchusein_item(item):
+    ids={str(value).strip() for value in item.get('ids',[]) if str(value).strip()}
+    ids.add(str(item.get('id','')).strip())
+    files=[Path(value).name for value in item.get('arquivos',[]) if value]
+    if item.get('nome'):files.append(Path(str(item['nome'])).name)
+    return CHEONCHUSEIN_ID in ids or any(name.startswith(CHEONCHUSEIN_ID+'_') for name in files)
+
+def apply_cheonchusein_work(work):
+    if not is_cheonchusein_item(work):return
+    work.update({
+        'chave':CHEONCHUSEIN_KEY,
+        'titulo':CHEONCHUSEIN_TITLE,
+        'titulos_alternativos':[CHEONCHUSEIN_ORIGINAL,'Celestial'],
+        'autores':['Lanmaru'],
+        'identificada':True,
+        'nacionalidade_conhecida':True,
+        'tem_link_nu':True,
+        'titulo_original_obra':CHEONCHUSEIN_ORIGINAL,
+        'tipo_obra':'Manhwa / Webtoon',
+        'sinopse_obra':CHEONCHUSEIN_SYNOPSIS,
+    })
+    review=work.setdefault('verificacao_obra',{})
+    review.update({
+        'autor':CHEONCHUSEIN_AUTHORS,
+        'nacionalidade_obra':'Coreia do Sul',
+        'protagonistas':CHEONCHUSEIN_PROTAGONISTS,
+        'titulo_original_obra':CHEONCHUSEIN_ORIGINAL,
+        'tipo_obra':'Manhwa / Webtoon',
+        'sinopse_obra':CHEONCHUSEIN_SYNOPSIS,
+        'referencias':[CHEONCHUSEIN_MANTA,CHEONCHUSEIN_MANHWA,CHEONCHUSEIN_NU],
+        'fonte_nacionalidade':CHEONCHUSEIN_NU,
+        'criterio_nacionalidade':'Novel Updates cataloga Celestial (천추세인) como obra coreana de Lanmaru; Manta identifica a adaptação For a Thousand Autumns e descreve Moonpyeong Seok e o Demônio Celestial.',
+        'metodo':'Conferência da ficha de Celestial no Novel Updates e da página da adaptação no Manta; EPUB local associado ao ID 72590.',
+        'verificado_em':'2026-11-17',
+        'epubs_lidos':[CHEONCHUSEIN_FILE],
+        'epubs_nao_lidos':[],
+    })
+
+def apply_cheonchusein_record(record):
+    if str(record.get('id','')).strip()!=CHEONCHUSEIN_ID:return
+    record.update({
+        'titulo':CHEONCHUSEIN_TITLE,
+        'catalogo':CHEONCHUSEIN_TITLE,
+        'autor':'Lanmaru',
+        'idioma':'korean',
+        'pais':'KR',
+        'nacionalidade_obra':'Coreia do Sul',
+        'fonte_nacionalidade_obra':CHEONCHUSEIN_NU,
+        'referencia_obra':CHEONCHUSEIN_MANTA,
+        'status_catalogo':'identificado',
+        'evidencia_catalogo':'Identidade revisada: For a Thousand Autumns (Cheonchusein / Celestial), adaptação coreana distinta da novel chinesa Thousand Autumns / Qian Qiu.',
+        'obra_verificada':CHEONCHUSEIN_TITLE,
+        'obra_chave':CHEONCHUSEIN_KEY,
+        'autor_obra':CHEONCHUSEIN_AUTHORS,
+        'protagonistas_obra':CHEONCHUSEIN_PROTAGONISTS,
+        'titulo_original_obra':CHEONCHUSEIN_ORIGINAL,
+        'tipo_obra':'Manhwa / Webtoon',
+        'sinopse_obra':CHEONCHUSEIN_SYNOPSIS,
+        'localizada_em':'Novel Updates / Manta',
+        'verificadas':'17/11/2026',
+    })
+
+def is_zhichu_survivorship_item(item):
+    ids={str(value).strip() for value in item.get('ids',[]) if str(value).strip()}
+    ids.add(str(item.get('id','')).strip())
+    files=[Path(value).name for value in item.get('arquivos',[]) if value]
+    if item.get('nome'):files.append(Path(str(item['nome'])).name)
+    return (ZHICHU_SURVIVORSHIP_ID in ids or
+            str(item.get('chave',''))==ZHICHU_SURVIVORSHIP_KEY or
+            any(name.startswith(ZHICHU_SURVIVORSHIP_ID+'_') for name in files))
+
+def apply_zhichu_survivorship_work(work):
+    if not is_zhichu_survivorship_item(work):return
+    work['autores']=[ZHICHU_AUTHOR]
+    review=work.setdefault('verificacao_obra',{})
+    review['autor']=ZHICHU_AUTHOR
+
+def apply_zhichu_survivorship_record(record):
+    if str(record.get('id','')).strip()!=ZHICHU_SURVIVORSHIP_ID:return
+    record['autor']=ZHICHU_AUTHOR
+    record['autor_obra']=ZHICHU_AUTHOR
+
 def title_guess(name):
     s=Path(name).stem
     s=re.sub(r'^\d{4,9}[_\s-]+','',s)
@@ -708,6 +805,29 @@ def duplicate_report_groups(path, works_by_key):
     finish_group()
     return groups
 
+def load_author_aliases(root):
+    path=root/'input'/'autores_de_para.json'
+    if not path.exists():return {}
+    raw=json.loads(path.read_text(encoding='utf-8'))
+    if not isinstance(raw,dict):raise ValueError('Mapa de autores precisa ser um objeto JSON')
+    aliases={}
+    for source,target in raw.items():
+        if not isinstance(source,str) or not isinstance(target,str):
+            raise ValueError('Mapa de autores precisa conter apenas textos')
+        key=unicodedata.normalize('NFC',source)
+        if key in aliases and aliases[key]!=target:
+            raise ValueError(f'Chave de autor conflitante após NFC: {source!r}')
+        aliases[key]=target
+    return aliases
+
+def apply_author_aliases(records, aliases):
+    for record in records:
+        for field in ('autor','autor_obra'):
+            value=record.get(field)
+            if isinstance(value,str):
+                key=unicodedata.normalize('NFC',value)
+                record[field]=aliases.get(key,value)
+
 def inject_html(original, payload, root):
     start='<!-- CHECK_EPUB_EXTRA_START -->';end='<!-- CHECK_EPUB_EXTRA_END -->'
     original=re.sub(re.escape(start)+r'.*?'+re.escape(end)+r'\s*','',original,flags=re.S)
@@ -720,6 +840,10 @@ def inject_html(original, payload, root):
     if not data_match:raise ValueError('Dados DATA não encontrados no HTML; não alterado')
     data_start=data_match.end()
     report_data,data_end=json.JSONDecoder().raw_decode(original[data_start:])
+    author_aliases=load_author_aliases(root)
+    for work in payload.get('obras',[]):
+        apply_cheonchusein_work(work)
+        apply_zhichu_survivorship_work(work)
     works_by_key={str(work.get('chave','')):work for work in payload.get('obras',[])}
     duplicate_groups=duplicate_report_groups(
         root/'output'/'relatorio_completo_obras_duplicadas.txt',works_by_key)
@@ -730,7 +854,10 @@ def inject_html(original, payload, root):
             for message_id in member.get('ids',[]):
                 duplicate_groups_by_id[str(message_id)].append(group)
     for record in report_data.get('records',[]):
+        apply_cheonchusein_record(record)
+        apply_zhichu_survivorship_record(record)
         record['duplicatas_relatorio']=duplicate_groups_by_id.get(str(record.get('id','')),[])
+    apply_author_aliases(report_data.get('records',[]),author_aliases)
     confirmed_files=set();confirmed_epub_ids=set();country_counts=Counter();country_epub_ids=defaultdict(set)
     confirmed_work_keys=set()
     display_payload=presentation_obras(payload)
@@ -864,6 +991,9 @@ def inject_html(original, payload, root):
             if is_confirmed:
                 confirmed_epub_ids.add(record_id)
                 country_epub_ids[nationality].add(record_id)
+    for record in report_data.get('records',[]):
+        apply_cheonchusein_record(record)
+        apply_zhichu_survivorship_record(record)
     # Count reviewed works using the same presentation grouping as Obras.
     # The EPUB count below still counts every associated file in the Explorer.
     for work in display_rows:
@@ -899,10 +1029,7 @@ def inject_html(original, payload, root):
         not known_review(row.get('verificacao_obra'))
         for row in payload.get('obras',[])
     )
-    nav='''<button class="nav" id="nav-works" onclick="ceNavigate('works')" title="Obras"><span class="navicon">▤</span><span class="navlabel">Obras</span></button>
-<button class="nav" id="nav-pending" onclick="ceNavigate('pending')" title="Baixadas não identificadas"><span class="navicon">⌕</span><span class="navlabel">Baixadas não identificadas</span></button>
-<button class="nav" id="nav-problems" onclick="ceNavigate('problems')" title="Problemas sem solução"><span class="navicon">!</span><span class="navlabel">Problemas sem solução</span></button>
-<button class="nav" id="nav-duplicates" onclick="ceNavigate('duplicates')" title="Duplicatas"><span class="navicon">▣</span><span class="navlabel">Duplicatas</span></button>'''
+    nav='''<button class="nav" id="nav-works" onclick="ceNavigate('works')" title="Obras"><span class="navicon">▤</span><span class="navlabel">Obras</span></button>'''
     if '</nav>' not in original or 'id="primaryTabs"' not in original or '</main>' not in original or '</body>' not in original:raise ValueError('Estrutura HTML inesperada; não alterada')
     original=original.replace('</nav>','<!-- CHECK_EPUB_NAV_START -->\n'+nav+'\n<!-- CHECK_EPUB_NAV_END -->\n</nav>',1)
     sections='''<!-- CHECK_EPUB_SECTIONS_START -->
@@ -911,6 +1038,7 @@ def inject_html(original, payload, root):
 <section id="problems" class="hidden"><div class="eyebrow">Biblioteca / Pendências</div><h1>Problemas sem solução</h1><p class="sub">Somente falhas comprovadas sem outra cópia correspondente; situações não verificáveis permanecem separadas.</p><div class="panel" id="ce-problems"></div></section>
 <section id="duplicates" class="hidden"><div class="eyebrow">Biblioteca / Auditoria</div><h1>Duplicatas</h1><p class="sub">Cópias idênticas e agrupamentos com evidência; títulos iguais sem autor não são mesclados automaticamente.</p><div class="panel" id="ce-duplicates"></div></section>
 <!-- CHECK_EPUB_SECTIONS_END -->'''
+    sections=sections.replace('<div class="eyebrow">Biblioteca / Obras</div><h1>Obras</h1><p class="sub">Obras ainda em revisão de nacionalidade, autoria ou personagens.</p>','')
     sections=sections.replace('<!-- CHECK_EPUB_SECTIONS_END -->','''<style>
 #works .ce-data-row td{vertical-align:middle}
 #works .ce-row-expander{border-color:#e8edf3;background:#fff}
@@ -1101,6 +1229,9 @@ def main():
             for field in ('titulo','titulos_alternativos','autores'):
                 value=curated.get(field)
                 if value:row[field]=value
+    for work in payload.get('obras',[]):
+        apply_cheonchusein_work(work)
+        apply_zhichu_survivorship_work(work)
     (out/'check_epub_obras.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
     report=out/'relatorio_telegram.html'
     if report.exists():

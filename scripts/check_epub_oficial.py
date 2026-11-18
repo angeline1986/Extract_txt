@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Adiciona a aba Oficial ao painel Check Epub sem tocar nas demais páginas.
+"""Adiciona a seção Oficial ao painel Check Epub sem criar uma aba de navegação.
 
 Uso: python3 scripts/check_epub_oficial.py --projeto .
 O catálogo é resolvido no navegador a partir do DATA.records já integrado ao HTML.
@@ -55,8 +55,37 @@ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
 const pending=s=>!s||['pendente','não identificada','nao identificada','indefinido','não identificado','nao identificado','unknown','-'].includes(norm(s));
 const volume=s=>norm(String(s||'').replace(/\b(?:vol(?:ume)?|book|livro|tomo)\.?\s*\d+\b/ig,'').replace(/\b(?:chapters?|cap[ií]tulos?)\s*\d+\s*(?:[-–]\s*\d+)?\b/ig,''));
-const items=Array.isArray(window.DATA?.records)?window.DATA.records:typeof DATA!=='undefined'?DATA.records:[];
+const items=(Array.isArray(window.DATA?.records)?window.DATA.records:typeof DATA!=='undefined'?DATA.records:[]).map(r=>({...r}));
 const decisions=__DECISIONS__;
+// CE_OFICIAL_SPECIFIC_OVERRIDES_V1
+// Sobreposicoes sao limitadas a aba Oficial; nunca alteram window.DATA.
+const officialRows=items;
+const selectedOfficialOverrides=Array.isArray(decisions.overrides)?decisions.overrides:[];
+for(const override of selectedOfficialOverrides){
+  if(!override||override.match_title!=='For a Thousand Autumns')continue;
+  const normalizeTitle=t=>String(t||'').normalize('NFKC').trim().toLowerCase();
+  const matches=officialRows.filter(r=>
+    String(r.id||'')===String(override.match_id||'72590')||
+    [r.obra_verificada,r.catalogo,r.titulo].some(t=>['for a thousand autumns','for a thousand autums'].includes(normalizeTitle(t)))
+  );
+  // Nao alterar outros registros se houver ambiguidade.
+  if(matches.length!==1){console.warn('Oficial: correcao pontual nao aplicada; registros encontrados:',matches.length);continue;}
+  const r=matches[0];
+  r.obra_chave='oficial:cheonchusein:for-a-thousand-autumns';
+  r.obra_verificada='For a Thousand Autumns';
+  r.titulo='For a Thousand Autumns';
+  r.catalogo='For a Thousand Autumns';
+  r.autor_obra='Lanmaru (novel), Gilmong e Boogie (arte)';
+  r.protagonistas_obra=['Moonpyeong Seok','Demônio Celestial'];
+  r.nacionalidade_obra='Coreia do Sul';
+  r.titulo_original_obra='Cheonchusein (천추세인)';
+  r.tipo_obra='Manhwa / Webtoon';
+  r.sinopse_obra='Um membro de baixo escalão da Seita Demoníaca vira guarda-costas do líder em uma disputa de sucessão.';
+  r.fonte_nacionalidade_obra='https://www.novelupdates.com/series/celestial/';
+  r.referencia_obra='https://manta.net/en/series/for-a-thousand-autumns-full-ver?seriesId=3467';
+  r.localizada_em='Manhwa / Webtoon: Cheonchusein';
+  r.observacao_obra='Obra coreana distinta da novel chinesa Thousand Autumns / Qian Qiu; identidade e créditos conferidos no Manta e no Novel Updates.';
+}
 const byKey=new Map(),parent=new Map();
 function keyOf(r,i){return String(r.obra_chave||'').trim()||'epub:'+String(r.id||i)}
 function root(k){let p=parent.get(k)||k;if(p!==k){p=root(p);parent.set(k,p)}return p}
@@ -105,10 +134,10 @@ function subtitleIdentity(t){
 const references=new Map(),exact=new Map(),numberedSeries=new Map();
 for(const [key,rs] of byKey){
   const refs=new Set(rs.map(ref).filter(Boolean));
-  for(const r of refs){if(references.has(r))union(key,references.get(r));else references.set(r,key)}
+  for(const r of refs){if(references.has(r)){const other=references.get(r);if(identityCompatible(rs,byKey.get(other)))union(key,other)}else references.set(r,key)}
   const titles=new Set(rs.flatMap(r=>[canonical(r),r.catalogo,r.titulo].map(volume).filter(x=>x.length>=9)));
   const authors=new Set(rs.map(r=>norm(author(r))).filter(Boolean));
-  if(authors.size===1){const a=[...authors][0];for(const t of titles){const k=t+'|'+a;if(exact.has(k))union(key,exact.get(k));else exact.set(k,key)}}
+  if(authors.size===1){const a=[...authors][0];for(const t of titles){const k=t+'|'+a;if(exact.has(k)){const other=exact.get(k);if(identityCompatible(rs,byKey.get(other)))union(key,other)}else exact.set(k,key)}}
   const a=authorIdentity(rs);
   if(a){
     const explicit=rs.flatMap(r=>[canonical(r),r.catalogo,r.titulo,r.nome]).map(volumeIdentity).filter(x=>x&&x.base.length>=9);
@@ -117,7 +146,7 @@ for(const [key,rs] of byKey){
       if(numberedSeries.has(k)){
         const other=numberedSeries.get(k);
         const c1=countryIdentity(rs),c2=countryIdentity(byKey.get(other));
-        if(!c1||!c2||c1===c2)union(key,other);
+        if((!c1||!c2||c1===c2)&&identityCompatible(rs,byKey.get(other)))union(key,other);
       }else numberedSeries.set(k,key);
     }
   }
@@ -129,7 +158,7 @@ for(const [key,rs] of byKey){
   for(const r of rs){
     const t=norm(canonical(r));const seriesKey=t+'|'+a;
     const other=numberedSeries.get(seriesKey);
-    if(other){const c1=countryIdentity(rs),c2=countryIdentity(byKey.get(other));if(!c1||!c2||c1===c2)union(key,other)}
+    if(other){const c1=countryIdentity(rs),c2=countryIdentity(byKey.get(other));if((!c1||!c2||c1===c2)&&identityCompatible(rs,byKey.get(other)))union(key,other)}
   }
 }
 // A colon subtitle can be grouped with its exact root only when the author,
@@ -144,25 +173,74 @@ for(const [key,rs] of byKey){
   const a=authorIdentity(rs),p=characterIdentity(rs),c=countryIdentity(rs);
   if(!a||!p||!c)continue;
   for(const r of rs){const base=subtitleIdentity(canonical(r));if(!base)continue;
-    const other=bareTitles.get(base+'|'+a+'|'+p+'|'+c);if(other)union(key,other);
+    const other=bareTitles.get(base+'|'+a+'|'+p+'|'+c);if(other&&identityCompatible(rs,byKey.get(other)))union(key,other);
   }
 }
+// CE_OFICIAL_SERIES_PRESENTATION_V2
+function volumeInfo(value){
+  const s=String(value||'').replace(/^\d{4,9}[_\s-]+/u,'').replace(/\.epub$/iu,'').trim();
+  let m=s.match(/^\s*\[([^\]]+?)\s+(\d{1,3})(?:\s*[-–:]\s*[^\]]*)?\]\s*(?:[-–:]\s*(.+))?$/u);
+  if(m)return {base:m[1].trim(),number:Number(m[2]),part:(m[3]||'').trim()};
+  m=s.match(/^(.+?)[\s,;:–-]+(?:vol(?:ume)?|book|livro|tomo)\.?\s*(\d{1,3})(?:\b|$)/iu);
+  if(m)return {base:m[1].trim().replace(/[\s,;:–-]+$/u,''),number:Number(m[2]),part:''};
+  return null;
+}
+function seriesDisplay(g){
+  const candidates=g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome]);
+  const numbered=candidates.map(volumeInfo).filter(v=>v&&norm(v.base).length>=7);
+  if(!numbered.length)return '';
+  const tally=new Map();
+  for(const v of numbered){const k=norm(v.base);const entry=tally.get(k)||{count:0,label:v.base};entry.count++;if(v.base.length<entry.label.length)entry.label=v.base;tally.set(k,entry)}
+  const best=[...tally.values()].sort((a,b)=>b.count-a.count||a.label.length-b.label.length)[0];
+  // Only use a common base when at least two EPUBs support it and it dominates.
+  if(!best||g.records.length<2||best.count<2)return '';
+  return best.label;
+}
+function volumeRow(r){
+  for(const value of [r.obra_verificada,r.catalogo,r.titulo,r.nome]){
+    const v=volumeInfo(value);if(v)return v;
+  }
+  return null;
+}
+function sortFiles(rs){
+  return [...rs].sort((a,b)=>{
+    const x=volumeRow(a),y=volumeRow(b);
+    return (x?.number??99999)-(y?.number??99999)||String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{numeric:true});
+  });
+}
+// A different explicit series URL or contradictory known country is a review blocker.
+// Use same-author gating for title/volume unions, but do not infer authors from names.
+function normalizedAuthor(value){
+ const first=String(value||'').split(/[\/;|]/u)[0].replace(/\([^)]*\)/gu,'').trim();
+ // Transliteration may coexist with CJK script: "Meng Xi Shi (梦溪石)".
+ return norm(first).replace(/[^a-z0-9 ]+/gu,'').trim();
+}
+function identityCompatible(a,b){
+ const aa=authorIdentity(a),bb=authorIdentity(b);
+ if(aa&&bb&&aa!==bb){
+   const av=[...new Set(a.map(r=>normalizedAuthor(author(r))).filter(Boolean))];
+   const bv=[...new Set(b.map(r=>normalizedAuthor(author(r))).filter(Boolean))];
+   if(!av.length||!bv.length||!av.some(x=>bv.includes(x)&&x.length>=6))return false;
+ }
+ const ca=countryIdentity(a),cb=countryIdentity(b);
+ if(ca&&cb&&ca!==cb)return false;
+ const ra=new Set(a.map(ref).filter(Boolean)),rb=new Set(b.map(ref).filter(Boolean));
+ if(ra.size&&rb.size&&![...ra].some(u=>rb.has(u)))return false;
+ return true;
+}
+
 const groups=new Map();for(const [key,rs] of byKey){const k=root(key);if(!groups.has(k))groups.set(k,{keys:[],records:[]});groups.get(k).keys.push(key);groups.get(k).records.push(...rs)}
-let works=[...groups].map(([id,g])=>{const rs=[...new Map(g.records.map((r,i)=>[String(r.id||'')||'file:'+r.nome+':'+i,r])).values()];const verified=rs.filter(r=>r.obra_verificada);const first=verified[0]||rs[0];const countries=[...new Set(rs.map(country).filter(x=>!pending(x)))];const c=countries.length>1?'Conflito':countries[0]||'Pendente';const authors=[...new Set(rs.map(author).filter(Boolean))];const prot=[...new Set(rs.flatMap(r=>Array.isArray(r.protagonistas_obra)?r.protagonistas_obra:[]).filter(Boolean))];const aliases=[...new Set(rs.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome].filter(Boolean)))];return{id,title:canonical(first),authors,protagonists:prot,country:c,aliases,records:rs,keys:g.keys,status:c==='Conflito'?'conflito':pending(c)?'pendente':'confirmada'}});
+let works=[...groups].map(([id,g])=>{const rs=[...new Map(g.records.map((r,i)=>[String(r.id||'')||'file:'+r.nome+':'+i,r])).values()];const verified=rs.filter(r=>r.obra_verificada);const first=verified[0]||rs[0];const countries=[...new Set(rs.map(country).filter(x=>!pending(x)))];const c=countries.length>1?'Conflito':countries[0]||'Pendente';const authors=[...new Set(rs.map(author).filter(Boolean))];const prot=[...new Set(rs.flatMap(r=>Array.isArray(r.protagonistas_obra)?r.protagonistas_obra:[]).filter(Boolean))];const aliases=[...new Set(rs.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome].filter(Boolean)))];const entry={id,title:canonical(first),authors,protagonists:prot,country:c,aliases,records:sortFiles(rs),keys:g.keys,status:c==='Conflito'?'conflito':pending(c)?'pendente':'confirmada'};const label=seriesDisplay(entry);if(label)entry.title=label;return entry});
 works.sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'));
 let ofPage=0;const pageSize=20;window.ofPage=0;
 function matching(){const q=norm($('of-search').value),c=$('of-country').value,s=$('of-status').value;return works.filter(g=>(!q||[g.title,...g.aliases,...g.authors,...g.protagonists,...g.records.map(r=>r.nome)].some(x=>norm(x).includes(q)))&&(!c||g.country===c)&&(!s||g.status===s))}
-function ofRender(){ofPage=window.ofPage||0;const matches=matching();const pages=Math.max(1,Math.ceil(matches.length/pageSize));ofPage=Math.max(0,Math.min(ofPage,pages-1));window.ofPage=ofPage;const selected=matches.slice(ofPage*pageSize,(ofPage+1)*pageSize);$('of-body').innerHTML=selected.map((g,i)=>{const uid='of-detail-'+ofPage+'-'+i;return '<tr><td><strong>'+escape(g.title)+'</strong></td><td>'+escape(g.authors.join(' / ')||'Pendente')+'</td><td>'+escape(g.protagonists.join(' / ')||'—')+'</td><td><span class="of-badge '+(g.status==='pendente'?'of-pending':'')+'">'+escape(g.country)+'</span></td><td>'+g.records.length+'</td><td><button type="button" class="row-expander" aria-expanded="false" aria-controls="'+uid+'" onclick="ofToggle(this)">›</button></td></tr><tr id="'+uid+'" hidden><td colspan="6"><div class="of-detail"><div><b>IDs de obras:</b> '+escape(g.keys.join(', '))+'</div><div><b>Títulos e aliases:</b> '+escape(g.aliases.join(' / '))+'</div>'+(g.status==='conflito'?'<div class="of-warning">Nacionalidades conflitantes: revisar antes de confirmar.</div>':'')+'<table><thead><tr><th>ID mensagem</th><th>Arquivo</th><th>Título identificado</th><th>Nacionalidade original</th></tr></thead><tbody>'+g.records.map(r=>'<tr><td>'+escape(r.id)+'</td><td>'+escape(r.nome)+'</td><td>'+escape(canonical(r))+'</td><td>'+escape(country(r)||'Pendente')+'</td></tr>').join('')+'</tbody></table></div></td></tr>'}).join('')||'<tr><td colspan="6">Nenhuma obra encontrada</td></tr>';
+function ofRender(){ofPage=window.ofPage||0;const matches=matching();const pages=Math.max(1,Math.ceil(matches.length/pageSize));ofPage=Math.max(0,Math.min(ofPage,pages-1));window.ofPage=ofPage;const selected=matches.slice(ofPage*pageSize,(ofPage+1)*pageSize);$('of-body').innerHTML=selected.map((g,i)=>{const uid='of-detail-'+ofPage+'-'+i;return '<tr><td><strong>'+escape(g.title)+'</strong></td><td>'+escape(g.authors.join(' / ')||'Pendente')+'</td><td>'+escape(g.protagonists.join(' / ')||'—')+'</td><td><span class="of-badge '+(g.status==='pendente'?'of-pending':'')+'">'+escape(g.country)+'</span></td><td>'+g.records.length+'</td><td><button type="button" class="row-expander" aria-expanded="false" aria-controls="'+uid+'" onclick="ofToggle(this)">›</button></td></tr><tr id="'+uid+'" hidden><td colspan="6"><div class="of-detail"><div><b>IDs de obras:</b> '+escape(g.keys.join(', '))+'</div><div><b>Títulos alternativos:</b> '+escape([...new Set(g.aliases.filter(t=>!String(t).toLowerCase().endsWith(".epub")&&norm(t)!==norm(g.title)))].slice(0,12).join(' / ')||'—')+'</div>'+(g.status==='conflito'?'<div class="of-warning">Nacionalidades conflitantes: revisar antes de confirmar.</div>':'')+'<table><thead><tr><th>Volume</th><th>ID mensagem</th><th>Arquivo</th><th>Título identificado</th><th>Nacionalidade original</th></tr></thead><tbody>'+g.records.map(r=>'<tr><td>'+escape(volumeRow(r)?.number??'—')+'</td><td>'+escape(r.id)+'</td><td>'+escape(r.nome)+'</td><td>'+escape(canonical(r))+'</td><td>'+escape(country(r)||'Pendente')+'</td></tr>').join('')+'</tbody></table></div></td></tr>'}).join('')||'<tr><td colspan="6">Nenhuma obra encontrada</td></tr>';
 $('of-summary').textContent=works.length+' obras consolidadas · '+works.reduce((n,g)=>n+g.records.length,0)+' EPUBs únicos por ID · '+works.filter(g=>g.status==='pendente').length+' pendentes · '+works.filter(g=>g.status==='conflito').length+' conflitos';$('of-range').textContent=matches.length+' resultados · página '+(ofPage+1)+' de '+pages;$('of-prev').disabled=ofPage===0;$('of-next').disabled=ofPage>=pages-1}
 function ofToggle(button){const row=$(button.getAttribute('aria-controls'));row.hidden=!row.hidden;button.setAttribute('aria-expanded',String(!row.hidden))}
 function ofExport(){const headers=['obra_id','obra','autor','protagonistas','nacionalidade','status','epub_id','arquivo','obra_origem'];const data=[headers,...matching().flatMap(g=>g.records.map(r=>[g.id,g.title,g.authors.join(' / '),g.protagonists.join(' / '),g.country,g.status,r.id||'',r.nome||'',r.obra_chave||'']))];const csv='\ufeff'+data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='check_epub_oficial.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 window.ofRender=ofRender;window.ofToggle=ofToggle;window.ofExport=ofExport;
 const countries=[...new Set(works.map(g=>g.country))].sort((a,b)=>a.localeCompare(b,'pt-BR'));$('of-country').insertAdjacentHTML('beforeend',countries.map(c=>'<option value="'+escape(c)+'">'+escape(c)+'</option>').join(''));
-// Take over only the new nav click. Legacy navigation remains untouched.
-const nav=$('nav-oficial');nav.addEventListener('click',()=>{for(const id of ['overview','explorer','works','pending','problems','duplicates'])$(id)?.classList.add('hidden');$('oficial').classList.remove('hidden');document.querySelectorAll('.primary-tabs .nav').forEach(x=>x.classList.toggle('active',x===nav));location.hash='oficial';ofRender()});
-for(const button of document.querySelectorAll('.primary-tabs .nav:not(#nav-oficial)'))button.addEventListener('click',()=>{$('oficial').classList.add('hidden')});
-window.addEventListener('hashchange',()=>{if(location.hash==='#oficial')nav.click();else $('oficial').classList.add('hidden')});
-if(location.hash==='#oficial')nav.click();else ofRender();
+ofRender();
 })();
 </script>'''
 
@@ -175,8 +253,8 @@ def inject(content, decisions):
     anchor = '</nav>'
     if 'id="primaryTabs"' not in content or anchor not in content or 'const DATA=' not in content:
         raise ValueError('HTML do Check Epub não reconhecido; nenhum arquivo alterado')
-    nav = NAV + '<button class="nav" id="nav-oficial" type="button" title="Oficial"><span class="navlabel">Oficial</span></button>'
-    content = content.replace(anchor, nav + '\n' + anchor, 1)
+    # Remove any previous Oficial tab but keep the section and its data available
+    # in the generated HTML for future use.
     # A secao deve estar DENTRO do container <main class="main">.
     # Fora dele, quebra o fluxo e aparece longe do menu.
     content = content.replace('</main>', '<!-- CE_OFICIAL_SECTION_START -->' + SECTION + '<!-- CE_OFICIAL_SECTION_END -->\n</main>', 1)

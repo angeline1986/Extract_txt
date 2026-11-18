@@ -120,11 +120,13 @@ def main():
   background:#f6f8fc;
 }
 *{box-sizing:border-box}
+html{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar{display:none}
 body{margin:0}
 button,input,select{font:inherit}
 button{cursor:pointer}
 .app{display:block;min-height:100vh}
-.primary-tabs{display:flex;align-items:center;gap:6px;margin:0 0 12px;padding:0;border-bottom:1px solid #e8edf3;overflow-x:auto;white-space:nowrap}
+.primary-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;padding:0;border-bottom:1px solid #e8edf3;overflow:visible}
 .nav{display:flex;align-items:center;gap:8px;flex:none;border:0;border-bottom:2px solid transparent;background:transparent;padding:12px 14px;margin:0 0 -1px;border-radius:8px 8px 0 0;color:#64748b;text-align:center;white-space:nowrap}
 .primary-tabs .navicon{display:none}
 .nav.active{
@@ -242,11 +244,16 @@ td{max-width:380px;overflow-wrap:anywhere}
 .novel-facet-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
 .novel-facet-heading strong{font-size:14px}
 .novel-clear{padding:5px 7px;border:0;background:transparent;color:#3457a5;font-size:12px}
-.novel-country-list{display:grid;gap:2px;max-height:min(78vh,840px);overflow-y:auto;overflow-x:hidden}
-.novel-country-option{display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:6px;color:#334155;font-size:13px;cursor:pointer}
-.novel-country-option:hover{background:#f5f7fb}
-.novel-country-option input{accent-color:#345fe8}
-.novel-country-count{margin-left:auto;color:#718097;font-variant-numeric:tabular-nums}
+.novel-facet-tabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;margin-bottom:12px;border-radius:9px;background:#eff3f9}
+.novel-facet-tab{min-height:32px;padding:6px 10px;border:0;border-radius:7px;background:transparent;color:#64748b;font-size:12px;font-weight:600}
+.novel-facet-tab[aria-pressed="true"]{background:#fff;color:#24324a;box-shadow:0 1px 4px #17243a20}
+.novel-facet-search{box-sizing:border-box;width:100%;padding:8px 9px;margin-bottom:10px;border:1px solid #dfe5ee;border-radius:7px;font-size:12px}
+.novel-facet-list{display:grid;gap:2px;max-height:min(68vh,760px);overflow-y:auto;overflow-x:hidden}
+.novel-facet-option{display:grid;grid-template-columns:14px minmax(0,1fr) max-content;align-items:center;gap:9px;padding:7px 6px;border-radius:6px;color:#334155;font-size:13px;cursor:pointer}
+.novel-facet-option:hover{background:#f5f7fb}
+.novel-facet-option input{width:14px;height:14px;margin:0;accent-color:#345fe8}
+.novel-facet-option>span:first-of-type{min-width:0;overflow-wrap:anywhere}
+.novel-facet-count{min-width:2ch;color:#718097;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .novel-results{min-width:0;padding:18px;background:#fff;border:1px solid #e7ebf2;border-radius:12px;box-shadow:0 2px 9px rgba(25,50,90,.025)}
 .novel-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
 .novel-toolbar-left,.novel-toolbar-right{display:flex;align-items:center;gap:10px;min-width:0}
@@ -284,6 +291,10 @@ td{max-width:380px;overflow-wrap:anywhere}
 .novel-summary-detail[hidden]{display:none!important}
 .novel-summary-detail td{max-width:none;padding:0!important;background:#f8fafc}
 .novel-files{padding:14px 18px 16px 42px;border-top:1px solid #e8edf3;background:#f8fafc}
+.novel-work-facts{margin:0 0 12px;border:1px solid #e5eaf1;border-radius:8px;background:#fff;overflow:hidden}
+.novel-work-fact{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:16px;padding:9px 12px;border-bottom:1px solid #e8edf3;line-height:1.5}
+.novel-work-fact:last-child{border-bottom:0}
+.novel-work-fact strong{color:#334155}
 .novel-file-list{display:grid;gap:8px}
 .novel-file-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 13px;border:1px solid #e5eaf1;border-radius:9px;background:#fff;color:#24324a}
 .novel-file-name{display:flex;align-items:center;gap:9px;min-width:0;overflow-wrap:anywhere}
@@ -332,7 +343,7 @@ td{max-width:380px;overflow-wrap:anywhere}
   .donut-layout{grid-template-columns:1fr;gap:10px}
   .novel-browser{grid-template-columns:1fr}
   .novel-facets{position:static}
-  .novel-country-list{max-height:240px}
+  .novel-facet-list{max-height:240px}
 }
 @media(max-width:1000px){.novel-toolbar{align-items:stretch;flex-direction:column}.novel-toolbar-left,.novel-toolbar-right{justify-content:space-between;flex-wrap:wrap}.novel-search{width:100%;max-width:none;flex:1}.novel-custom-select{flex:1 1 180px}}
 @media(max-width:760px){.novel-summary-footer{grid-template-columns:1fr 1fr;row-gap:10px}.novel-summary-footer-left{grid-column:1;grid-row:1}.novel-summary-range{grid-column:1 / -1;grid-row:2}.novel-summary-pager{grid-column:2;grid-row:1;gap:10px}}
@@ -343,6 +354,7 @@ td{max-width:380px;overflow-wrap:anywhere}
   .card{padding:14px}
   .number{font-size:24px}
 }
+@media(max-width:520px){.novel-work-fact{grid-template-columns:1fr;gap:2px}}
 </style>
 </head>
 <body>
@@ -372,8 +384,13 @@ td{max-width:380px;overflow-wrap:anywhere}
   <div class="panel">
     <div class="novel-browser">
       <aside class="novel-facets">
-        <div class="novel-facet-heading"><strong>Nacionalidade</strong><button class="novel-clear" type="button" onclick="clearNovelFilters()">Limpar filtros</button></div>
-        <div id="novelCountryFilters" class="novel-country-list"></div>
+        <div class="novel-facet-heading"><strong>Filtros</strong><button class="novel-clear" type="button" onclick="clearNovelFilters()">Limpar filtros</button></div>
+        <div class="novel-facet-tabs" role="group" aria-label="Tipo de filtro">
+          <button type="button" class="novel-facet-tab" id="novel-facet-country" aria-pressed="true" onclick="setNovelSidebarFacet('country')">País</button>
+          <button type="button" class="novel-facet-tab" id="novel-facet-author" aria-pressed="false" onclick="setNovelSidebarFacet('author')">Autor</button>
+        </div>
+        <input id="novelFacetSearch" class="novel-facet-search" placeholder="Filtrar país..." aria-label="Filtrar país" oninput="renderNovelFacetFilters()">
+        <div id="novelFacetFilters" class="novel-facet-list"></div>
       </aside>
       <div class="novel-results">
         <div class="novel-toolbar">
@@ -478,7 +495,8 @@ function novelSeriesFamily(group){
   if(/fanfic|fanfiction/.test(text))return '';
   if(/\bfor a thousand autum(?:n)?s\b/.test(text))return '';
   const rules=[
-    ['Grandmaster of Demonic Cultivation',/grandmaster of demonic cultivation|mo dao zu shi/],
+    ['Grandmaster of Demonic Cultivation',/grandmaster of demonic cultivation|mo dao zu shi|el gran maestro de la cultivacion demoniaca|魔道祖师/],
+    ['Heaven Official’s Blessing',/heaven official.s blessing|tian guan ci fu|la bendicion del oficial del cielo|la benedizione dell.?ufficiale divino|天官赐福/],
     ['The Apothecary Diaries',/apothecary diaries/],['10 DANCE',/\b10 dance\b/],['Thousand Autumns',/thousand autumns|qian qiu/],
     ['Hate Me, but Let Me Stay',/hate me but let me stay/],['The Moon on a Rainy Night',/moon on a rainy night/],['The Summer You Were There',/summer you were there/],
     ['Joyful Reunion',/joyful reunion/],['Lullaby of the Dawn',/lullaby of the dawn/],['The Husky and His White Cat Shizun',/husky and his white cat shizun|erha he ta de bai mao/],
@@ -497,9 +515,16 @@ function novelSeriesFamily(group){
     ['The Villain’s White Halo',/villain.s white halo/],['At the World’s Mercy',/at the world.s mercy/],['Deadman Switch',/deadman switch/],
     ['Go For It, Nakamura!',/go for it(?: again)? nakamura/],['Earthian',/\bearthian\b/],['Megumi & Tsugumi',/megumi.*tsugumi/],['School Trip: Joined a Group I’m Not Close To',/school trip joined a group/],
     ['Strawberry Panic!',/strawberry panic/],['Rose & Renaissance',/rose renaissance/],['Trascendiendo la Semilla del Mal',/trascendiendo la semilla del mal/],
-    ['The Scum Villain’s Self-Saving System',/scum villain.s self saving system|ren zha fanpai zijiu xitong|\bsvss\b/]
+    ['The Scum Villain’s Self-Saving System',/scum villain.s self[- ]?saving system|ren zha fanpai zijiu xitong|\bsvss\b|el sistema de autosalvacion del villano escoria|il sistema di salvataggio del peggiore dei cattivi|人渣反派自救系统/]
   ];
   for(const [label,pattern] of rules){if(pattern.test(text)){if(label==='The Scum Villain’s Self-Saving System'&&/bingjiu|fanfic|fanfiction/.test(text))return '';return label}}
+  const protagonistText=(group.protagonistList||[]).join(' ').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+  const protagonistFamilies=[
+    ['Grandmaster of Demonic Cultivation',/wei wuxian|魏无羡/,/lan wangji|蓝忘机/],
+    ['Heaven Official’s Blessing',/xie lian|谢怜/,/hua cheng|花城/],
+    ['The Scum Villain’s Self-Saving System',/shen qingqiu|shen yuan|沈清秋/,/luo binghe|洛冰河/]
+  ];
+  for(const [label,first,second] of protagonistFamilies){if(first.test(protagonistText)&&second.test(protagonistText)){if(label==='The Scum Villain’s Self-Saving System'&&/bingjiu|fanfic|fanfiction/.test(text))return '';return label}}
   return '';
 }
 function groupNovelSeries(groups){
@@ -522,7 +547,8 @@ function groupNovelSeries(groups){
 }
 const novelGroups=groupNovelSeries(makeNovelGroups(DATA.records));
 let filtered=novelGroups.slice(),page=0,novelSummaryPage=0;
-const selectedNovelCountries=new Set();
+const selectedNovelCountries=new Set(),selectedNovelAuthors=new Set();
+let novelSidebarFacet='country';
 let novelQuantityFilter='all',selectedNovelAuthor='',selectedNovelProtagonist='';
 const pageSize=50;
 let novelSummaryPageSize=10;
@@ -600,6 +626,7 @@ function renderNovelSummary(){
   const rows=novelGroups.filter(g=>
     (!query||[g.title,...(g.alternateTitles||[]),...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])].filter(Boolean).some(value=>String(value).toLocaleLowerCase('pt-BR').includes(query)))&&
     (!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&
+    (!selectedNovelAuthors.size||novelGroupAuthors(g).some(author=>selectedNovelAuthors.has(author)))&&
     (!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&
     (!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&
     (novelQuantityFilter==='all'||(novelQuantityFilter==='one'?g.records.length===1:g.records.length>1))
@@ -609,8 +636,10 @@ function renderNovelSummary(){
   $('novelSummaryBody').innerHTML=shown.map((g,index)=>{
     const detailId='novel-summary-detail-'+index;
     const pending=/^(pendente|não identificada|nao identificada)/i.test(g.country);
+    const factsRecord=g.records.find(r=>r.tipo_obra||r.titulo_original_obra||r.sinopse_obra);
+    const facts=factsRecord?[["Formato",factsRecord.tipo_obra],["Título original",factsRecord.titulo_original_obra],["Enredo",factsRecord.sinopse_obra]].filter(([,value])=>value).map(([label,value])=>'<div class="novel-work-fact"><strong>'+esc(label)+'</strong><span>'+esc(value)+'</span></div>').join(''):'';
     const files=g.records.map(r=>{const sourceTitle=r.obra_verificada||r.catalogo||r.titulo||'';return '<div class="novel-file-item"><span class="novel-file-name"><span class="novel-file-icon" aria-hidden="true">▤</span><span>'+((sourceTitle&&groupNorm(sourceTitle)!==groupNorm(g.title))?'<small>'+esc(sourceTitle)+'</small><br>':'')+esc(r.nome||'—')+'</span></span><span class="novel-file-id">ID #'+esc(r.id||'—')+'</span></div>'}).join('');
-    return `<tr class="novel-summary-row" tabindex="0" aria-expanded="false" aria-controls="${detailId}" onclick="toggleNovelSummaryRow(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleNovelSummaryRow(this)}"><td><div class="novel-summary-title"><span>${esc(g.title)}</span></div></td><td>${esc(g.author==='—'?'Pendente':g.author)}</td><td>${esc(g.protagonists==='—'?'Pendente':g.protagonists)}</td><td><span class="novel-country-badge ${pending?'pending':''}">${esc(g.country)}</span></td><td><span class="novel-count-badge ${g.records.length>1?'multiple':''}">${fmt(g.records.length)}</span></td><td><span class="novel-summary-expand" aria-hidden="true">›</span></td></tr><tr id="${detailId}" class="novel-summary-detail" hidden><td colspan="6"><div class="novel-files"><div class="novel-file-list">${files}</div></div></td></tr>`;
+    return `<tr class="novel-summary-row" tabindex="0" aria-expanded="false" aria-controls="${detailId}" onclick="toggleNovelSummaryRow(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleNovelSummaryRow(this)}"><td><div class="novel-summary-title"><span>${esc(g.title)}</span></div></td><td>${esc(g.author==='—'?'Pendente':g.author)}</td><td>${esc(g.protagonists==='—'?'Pendente':g.protagonists)}</td><td><span class="novel-country-badge ${pending?'pending':''}">${esc(g.country)}</span></td><td><span class="novel-count-badge ${g.records.length>1?'multiple':''}">${fmt(g.records.length)}</span></td><td><span class="novel-summary-expand" aria-hidden="true">›</span></td></tr><tr id="${detailId}" class="novel-summary-detail" hidden><td colspan="6"><div class="novel-files">${facts?'<div class="novel-work-facts">'+facts+'</div>':''}<div class="novel-file-list">${files}</div></div></td></tr>`;
   }).join('')||'<tr><td colspan="6" class="muted">Nenhum grupo encontrado com esses filtros.</td></tr>';
   const end=Math.min(start+novelSummaryPageSize,rows.length);
   $('novelSummaryRange').textContent=rows.length?fmt(start+1)+'–'+fmt(end)+' de '+fmt(rows.length):'0 de 0';
@@ -620,12 +649,16 @@ function renderNovelSummary(){
 }
 function moveNovelSummary(delta){novelSummaryPage+=delta;renderNovelSummary()}
 function setNovelPageSize(value){novelSummaryPageSize=Number(value)||10;novelSummaryPage=0;renderNovelSummary()}
-function renderNovelCountryFilters(){
-  const counts=new Map();novelGroups.forEach(g=>counts.set(g.country,(counts.get(g.country)||0)+1));
-  const countries=[...counts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR'));
-  $('novelCountryFilters').innerHTML=countries.map(([country,count])=>'<label class="novel-country-option"><input type="checkbox" value="'+esc(country)+'" '+(selectedNovelCountries.has(country)?'checked':'')+' onchange="toggleNovelCountry(this)"><span>'+esc(country)+'</span><span class="novel-country-count">'+fmt(count)+'</span></label>').join('');
+function novelGroupAuthors(group){return group.authors.length?group.authors:['Pendente']}
+function setNovelSidebarFacet(type){novelSidebarFacet=type==='author'?'author':'country';const isAuthor=novelSidebarFacet==='author';$('novel-facet-country').setAttribute('aria-pressed',String(!isAuthor));$('novel-facet-author').setAttribute('aria-pressed',String(isAuthor));$('novelFacetSearch').value='';$('novelFacetSearch').placeholder=isAuthor?'Buscar autor...':'Filtrar país...';$('novelFacetSearch').setAttribute('aria-label',isAuthor?'Buscar autor':'Filtrar país');renderNovelFacetFilters()}
+function renderNovelFacetFilters(){
+  const isAuthor=novelSidebarFacet==='author',query=$('novelFacetSearch').value.trim().toLocaleLowerCase('pt-BR'),counts=new Map();
+  novelGroups.forEach(g=>{const values=isAuthor?novelGroupAuthors(g):[g.country];[...new Set(values)].forEach(value=>counts.set(value,(counts.get(value)||0)+1))});
+  const values=[...counts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR',{sensitivity:'base'})).filter(([value])=>value.toLocaleLowerCase('pt-BR').includes(query));
+  const selected=isAuthor?selectedNovelAuthors:selectedNovelCountries;
+  $('novelFacetFilters').innerHTML=values.map(([value,count])=>'<label class="novel-facet-option"><input type="checkbox" value="'+esc(value)+'" '+(selected.has(value)?'checked':'')+' onchange="toggleNovelSidebarFilter(this)"><span>'+esc(value)+'</span><span class="novel-facet-count">'+fmt(count)+'</span></label>').join('')||'<div class="muted" style="padding:8px 6px">Nenhum resultado.</div>';
 }
-function toggleNovelCountry(input){if(input.checked)selectedNovelCountries.add(input.value);else selectedNovelCountries.delete(input.value);novelSummaryPage=0;renderNovelSummary()}
+function toggleNovelSidebarFilter(input){const selected=novelSidebarFacet==='author'?selectedNovelAuthors:selectedNovelCountries;if(input.checked)selected.add(input.value);else selected.delete(input.value);novelSummaryPage=0;renderNovelSummary()}
 function novelDropdownValues(type){
   const counts=new Map();
   novelGroups.forEach(g=>{const values=type==='author'?g.authors:g.protagonistList;[...new Set(values)].filter(Boolean).forEach(value=>counts.set(value,(counts.get(value)||0)+1))});
@@ -641,19 +674,19 @@ function renderNovelDropdown(type){
 function toggleNovelDropdown(type){const name=type==='author'?'author':'protagonist',menu=$('novel-'+name+'-menu'),opening=menu.hidden;['author','protagonist'].forEach(key=>{$('novel-'+key+'-menu').hidden=true;$('novel-'+key+'-button').setAttribute('aria-expanded','false')});if(opening){menu.hidden=false;$('novel-'+name+'-button').setAttribute('aria-expanded','true');renderNovelDropdown(type);$('novel-'+name+'-search').focus()}}
 function selectNovelFacet(type,value){if(type==='author'){selectedNovelAuthor=value;$('novel-author-label').textContent=value||'Autores'}else{selectedNovelProtagonist=value;$('novel-protagonist-label').textContent=value||'Protagonista'};toggleNovelDropdown(type);novelSummaryPage=0;renderNovelSummary()}
 function setNovelQuantityFilter(value){novelQuantityFilter=value;novelSummaryPage=0;document.querySelectorAll('[data-epub-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.epubFilter===value)));renderNovelSummary()}
-function clearNovelFilters(){selectedNovelCountries.clear();selectedNovelAuthor='';selectedNovelProtagonist='';novelQuantityFilter='all';$('novelSummarySearch').value='';$('novel-author-search').value='';$('novel-protagonist-search').value='';novelSummaryPage=0;document.querySelectorAll('[data-epub-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.epubFilter==='all')));$('novel-author-label').textContent='Autores';$('novel-protagonist-label').textContent='Protagonista';['author','protagonist'].forEach(key=>{$('novel-'+key+'-menu').hidden=true;$('novel-'+key+'-button').setAttribute('aria-expanded','false')});renderNovelCountryFilters();renderNovelSummary()}
+function clearNovelFilters(){selectedNovelCountries.clear();selectedNovelAuthors.clear();selectedNovelAuthor='';selectedNovelProtagonist='';novelQuantityFilter='all';$('novelSummarySearch').value='';$('novelFacetSearch').value='';$('novel-author-search').value='';$('novel-protagonist-search').value='';novelSummaryPage=0;document.querySelectorAll('[data-epub-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.epubFilter==='all')));$('novel-author-label').textContent='Autores';$('novel-protagonist-label').textContent='Protagonista';['author','protagonist'].forEach(key=>{$('novel-'+key+'-menu').hidden=true;$('novel-'+key+'-button').setAttribute('aria-expanded','false')});renderNovelFacetFilters();renderNovelSummary()}
 document.addEventListener('click',event=>{if(!event.target.closest('.novel-custom-select'))['author','protagonist'].forEach(key=>{$('novel-'+key+'-menu').hidden=true;$('novel-'+key+'-button').setAttribute('aria-expanded','false')})});
 function toggleNovelSummaryRow(row){const detail=$(row.getAttribute('aria-controls'));const expanded=row.getAttribute('aria-expanded')==='true';row.setAttribute('aria-expanded',String(!expanded));detail.hidden=expanded}
 function exportNovelSummaryCSV(){
   const query=$('novelSummarySearch').value.trim().toLocaleLowerCase('pt-BR');
-  const groups=novelGroups.filter(g=>(!query||[g.title,...(g.alternateTitles||[]),...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])].filter(Boolean).some(value=>String(value).toLocaleLowerCase('pt-BR').includes(query)))&&(!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&(!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&(!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&(novelQuantityFilter==='all'||(novelQuantityFilter==='one'?g.records.length===1:g.records.length>1)));
+  const groups=novelGroups.filter(g=>(!query||[g.title,...(g.alternateTitles||[]),...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])].filter(Boolean).some(value=>String(value).toLocaleLowerCase('pt-BR').includes(query)))&&(!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&(!selectedNovelAuthors.size||novelGroupAuthors(g).some(author=>selectedNovelAuthors.has(author)))&&(!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&(!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&(novelQuantityFilter==='all'||(novelQuantityFilter==='one'?g.records.length===1:g.records.length>1)));
   const cols=['Obra','Autor','Protagonistas','Nacionalidade','Quantidade de EPUBs','Arquivo EPUB','ID'];
   const quote=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
   const lines=[cols.join(';'),...groups.flatMap(g=>g.records.map(r=>[g.title,g.author==='—'?'Pendente':g.author,g.protagonists==='—'?'Pendente':g.protagonists,g.country,g.records.length,r.nome||'',r.id||''].map(quote).join(';')))];
   const url=URL.createObjectURL(new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}));
   const link=document.createElement('a');link.href=url;link.download='epubs_por_novel.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-renderNovelCountryFilters();
+renderNovelFacetFilters();
 renderNovelDropdown('author');renderNovelDropdown('protagonist');
 renderNovelSummary();
 const nationalities=new Map();
