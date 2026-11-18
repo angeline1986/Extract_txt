@@ -503,9 +503,9 @@ function novelSeriesFamily(group){
     ['Dinghai Fusheng Records',/dinghai fusheng records/],['Peerless',/\bpeerless\b/],['World’s End Blue Bird',/world.s end blue bird/],['No God in Eden',/no god in eden/],
     ['Remnants of Filth (Yuwu)',/remnants of filth|\byuwu\b/],['Run Away With Me, Girl',/run away with me girl/],['Run Wild (Sa Ye)',/run wild|\bsa ye\b/],
     ['Stars of Chaos (Sha Po Lang)',/stars of chaos|sha po lang/],['Silent Reading (Mo Du)',/silent reading|\bmo du\b/],['The Dangerous Convenience Store',/dangerous convenience store/],
-    ['Three Hundred Years of Longing',/three hundred years of longing/],['Thrice Married to a Salted Fish',/thrice married to a salted fish/],['Ballad of Sword and Wine (Qiang Jin Jiu)',/ballad of sword and wine|qiang jin jiu/],
+    ['Three Hundred Years of Longing',/three hundred years of longing|unseen immortal of (?:three hundred|300) years|bu jian shang xian san bai nian|不见上仙三百年/],['Thrice Married to a Salted Fish',/thrice married to a salted fish/],['Ballad of Sword and Wine (Qiang Jin Jiu)',/ballad of sword and wine|qiang jin jiu/],
     ['Case File Compendium (Bing An Ben)',/case file compendium|bing an ben/],['Guardian (Zhen Hun)',/guardian zhen hun|\bzhen hun\b/],
-    ['Legend of Exorcism (Tianbao Fuyao Lu)',/legend of exorcism|tianbao fuyao lu/],['Copper Coins (Tong Qian Kan Shi)',/copper coins|tong qian kan shi/],
+    ['Legend of Exorcism (Tianbao Fuyao Lu)',/legend of exorcism|tianbao fuyao lu/],['Copper Coins (Tong Qian Kan Shi)',/copper coin(?:s| niches)?|tong qian kan shi|monedas de cobre|铜钱龛世/],
     ['The Wife Comes First (Qi Wei Shang)',/wife comes first|qi wei shang/],['Twin Jades of Jiangdong',/twin jades of jiangdong/],['Villains Are Destined to Die',/villains are destined to die/],
     ['The Summer Hikaru Died',/summer hikaru died/],['You’ve Got Mail',/you.ve got mail|perils of pigeon post/],['Your Forma',/your forma|electronic investigator echika/],
     ['The Disabled Tyrant’s Beloved Pet Fish',/disabled tyrant.s beloved pet fish|canji baojun de zhangxin yu/],['Secrets of the Silent Witch',/secrets of the silent witch/],
@@ -515,14 +515,27 @@ function novelSeriesFamily(group){
     ['The Villain’s White Halo',/villain.s white halo/],['At the World’s Mercy',/at the world.s mercy/],['Deadman Switch',/deadman switch/],
     ['Go For It, Nakamura!',/go for it(?: again)? nakamura/],['Earthian',/\bearthian\b/],['Megumi & Tsugumi',/megumi.*tsugumi/],['School Trip: Joined a Group I’m Not Close To',/school trip joined a group/],
     ['Strawberry Panic!',/strawberry panic/],['Rose & Renaissance',/rose renaissance/],['Trascendiendo la Semilla del Mal',/trascendiendo la semilla del mal/],
-    ['The Scum Villain’s Self-Saving System',/scum villain.s self[- ]?saving system|ren zha fanpai zijiu xitong|\bsvss\b|el sistema de autosalvacion del villano escoria|il sistema di salvataggio del peggiore dei cattivi|人渣反派自救系统/]
+    ['The Scum Villain’s Self-Saving System',/scum villain.s self[- ]?saving system|ren zha fanpai zijiu xitong|\bsvss\b|el sistema de autosalvacion del villano escoria|il sistema di salvataggio del peggiore dei cattivi|人渣反派自救系统/],
+    ['Yin Ke',/\byin ke\b|阴客|2022 zhongyuan mini[ -]theatre/],
+    ['A Certain Someone',/\ba certain someone\b|\bmou mou\b|某某/],
+    ['Black Sky',/black sk(?:y|ay)|hei ?tian|黑天/],
+    ['First-Class Lawyer',/first[- ]class lawyer/],
+    ['Global University Entrance Examination',/global examination|global university entrance examination/]
   ];
   for(const [label,pattern] of rules){if(pattern.test(text)){if(label==='The Scum Villain’s Self-Saving System'&&/bingjiu|fanfic|fanfiction/.test(text))return '';return label}}
   const protagonistText=(group.protagonistList||[]).join(' ').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
   const protagonistFamilies=[
     ['Grandmaster of Demonic Cultivation',/wei wuxian|魏无羡/,/lan wangji|蓝忘机/],
     ['Heaven Official’s Blessing',/xie lian|谢怜/,/hua cheng|花城/],
-    ['The Scum Villain’s Self-Saving System',/shen qingqiu|shen yuan|沈清秋/,/luo binghe|洛冰河/]
+    ['The Scum Villain’s Self-Saving System',/shen qingqiu|shen yuan|沈清秋/,/luo binghe|洛冰河/],
+    ['Yin Ke',/xie bai|谢白/,/yin wushu|殷无书/],
+    ['A Certain Someone',/sheng wang|盛望/,/jiang tian|江添/],
+    ['Black Sky',/chu si|楚斯/,/sa.?e yang|萨厄.?杨/],
+    ['Copper Coins (Tong Qian Kan Shi)',/xue xian|薛闲/,/xuan min|玄悯/],
+    ['First-Class Lawyer',/yan suizhi|燕绥之/,/gu yan|顾晏/],
+    ['Global University Entrance Examination',/you huo|游惑/,/qin jiu|秦究/],
+    ['Panguan: The Twelfth Gate',/wen shi|闻时/,/xie wen|谢问/],
+    ['Three Hundred Years of Longing',/wu xingxue|乌行雪|吴星雪/,/xiao fuxuan|萧复暄/]
   ];
   for(const [label,first,second] of protagonistFamilies){if(first.test(protagonistText)&&second.test(protagonistText)){if(label==='The Scum Villain’s Self-Saving System'&&/bingjiu|fanfic|fanfiction/.test(text))return '';return label}}
   return '';
