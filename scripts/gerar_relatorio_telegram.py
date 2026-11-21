@@ -15,6 +15,21 @@ COUNTRY_CODES = {
     "JP": "Japão",
 }
 
+THAI_TITLE_CORRECTIONS = {
+    "84060": ("Heartbound", "obra_01926"),
+    "83243": ("Heartbound", "obra_01926"),
+    "75911": ("Crazy Love Moo Moo", "obra_01567"),
+    "66740": ("NITI man, society and lover", "obra_01255"),
+    "58718": ("NITI man, society and lover", "obra_01255"),
+    "5850": ("Cutie Pie", "obra_01055"),
+    "5857": ("Cutie Pie", "obra_01055"),
+    "55509": ("Space: The Gap Between Us", "obra_00997"),
+    "1965": ("My Only 12%", "obra_00093"),
+    "1568": ("My Only 12%", "obra_00093"),
+}
+
+KOREAN_LOOK_AT_ME_IDS = {"59957", "59943", "59940", "59867", "59865"}
+
 def catalog_author(value):
     value = str(value or "").strip()
     try:
@@ -52,7 +67,20 @@ def main():
         raise SystemExit("CSV de classificação não encontrado em output/")
 
     source = files[-1]
-    rows = read_csv(source)
+    all_rows = read_csv(source)
+    local_manifest = ROOT / "input/epubs_locais_confirmados_20261118.json"
+    if not local_manifest.exists():
+        raise SystemExit("Manifesto de EPUBs locais ausente; confira a disponibilidade antes de gerar o painel.")
+    local_epub_ids = json.loads(local_manifest.read_text(encoding="utf-8"))["ids"]
+    if len(local_epub_ids) != len(set(local_epub_ids)):
+        raise SystemExit("Manifesto de EPUBs locais contém IDs duplicados.")
+    catalog_ids = {r.get("id_mensagem", "") for r in all_rows}
+    if not set(local_epub_ids) <= catalog_ids:
+        raise SystemExit("Manifesto de EPUBs locais contém IDs ausentes do inventário.")
+    local_id_set = set(local_epub_ids)
+    rows = [r for r in all_rows if r.get("id_mensagem", "") in local_id_set]
+    if len(rows) != len(local_id_set):
+        raise SystemExit("A contagem do inventário local não corresponde ao manifesto.")
 
     records = []
     for r in rows:
@@ -76,6 +104,39 @@ def main():
             "data": r.get("data_utc", ""),
             "link": r.get("link_mensagem", "")
         })
+        if r.get("id_mensagem") in {"83728", "83730"}:
+            records[-1].update({
+                "titulo": "Even Better",
+                "obra_verificada": "Even Better",
+                "autor_obra": "Peachhplease",
+                "nacionalidade_obra": "Tailândia",
+                "protagonistas_obra": ["Jettana Khieo (Jamie)", "Marvis Lee (Mars)"],
+            })
+        thai_correction = THAI_TITLE_CORRECTIONS.get(r.get("id_mensagem"))
+        if thai_correction:
+            title, work_key = thai_correction
+            records[-1].update({
+                "titulo": title,
+                "obra_verificada": title,
+                "obra_chave": work_key,
+                "nacionalidade_obra": "Tailândia",
+            })
+        if r.get("id_mensagem") == "75106":
+            records[-1].update({
+                "obra_verificada": "Why Do All My Roommates Look at Me Like This?",
+                "obra_chave": "obra_02841",
+                "autor_obra": "Gong Zi Yu Ge (公子于歌)",
+                "nacionalidade_obra": "China",
+                "protagonistas_obra": ["Sui Yi", "Jiang Chengyao", "Gu Qingyang", "Ling Xuezhu"],
+            })
+        elif r.get("id_mensagem") in KOREAN_LOOK_AT_ME_IDS:
+            records[-1].update({
+                "obra_verificada": "Look at Me",
+                "obra_chave": "obra_01113",
+                "autor_obra": "Tansan",
+                "nacionalidade_obra": "Coreia do Sul",
+                "protagonistas_obra": ["Heerak Cho", "Yoon Doseon (Dooseon)"],
+            })
 
     statuses = Counter(status_of(r) for r in rows)
     languages = Counter(
@@ -85,21 +146,9 @@ def main():
         and (r.get("idioma_original", "") or r.get("pais_origem", ""))
     )
 
-    inventory = {}
-    originals = sorted((ROOT / "input").glob("telegram_midias_*.csv"))
-    originals = [p for p in originals if "apenas_epub" not in p.name]
-    if originals:
-        media = read_csv(originals[-1])
-        inventory["Total de mídias"] = len(media)
-        inventory["EPUBs no inventário"] = sum(
-            x.get("nome_arquivo", "").lower().endswith(".epub")
-            for x in media
-        )
-
     data = {
         "records": records,
         "languages": dict(languages),
-        "inventory": inventory,
         "generated": datetime.now().strftime("%d/%m/%Y %H:%M"),
         "source": source.name
     }
@@ -288,6 +337,7 @@ td{max-width:380px;overflow-wrap:anywhere}
 .novel-summary-row:hover .novel-summary-expand{background:#edf2ff;color:#3457a5}
 .novel-summary-row[aria-expanded="true"] .novel-summary-expand{transform:rotate(90deg);background:#edf2ff;color:#3457a5}
 .novel-count-badge,.novel-country-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:999px;background:#f0f3f8;color:#53657d;font-size:12px;font-weight:650;white-space:nowrap}
+.novel-country-badge{white-space:normal;text-align:center;overflow-wrap:anywhere;max-width:100%}
 .novel-count-badge.multiple{background:#eaf0ff;color:#3457a5}
 .novel-country-badge.pending{background:#fff3dc;color:#a66a09}
 .novel-summary-detail[hidden]{display:none!important}
@@ -365,13 +415,12 @@ td{max-width:380px;overflow-wrap:anywhere}
 <nav class="primary-tabs" id="primaryTabs" aria-label="Navegação principal">
   <button class="nav active" id="nav-overview" onclick="navigate('overview')" title="Visão geral"><span class="navlabel">Visão geral</span></button>
   <button class="nav" id="nav-novels" onclick="navigate('novels')" title="EPUBs por novel"><span class="navlabel">EPUBs por novel</span></button>
-  <button class="nav" id="nav-explorer" onclick="navigate('explorer')" title="Explorador de EPUBs"><span class="navlabel">Explorador de EPUBs</span></button>
 </nav>
 <section id="overview">
   <div id="overviewPanel" role="tabpanel" aria-labelledby="nav-overview">
   <div class="grid" id="cards"></div>
   <div class="panel">
-    <h2>Países de origem das obras revisadas</h2>
+    <h2>Origens das obras no acervo</h2>
     <p class="muted" id="verifiedOriginsSummary"></p>
     <div id="verifiedOrigins"></div>
     <div id="donutTooltip" class="donut-tooltip" role="status" aria-live="polite"></div>
@@ -379,7 +428,7 @@ td{max-width:380px;overflow-wrap:anywhere}
   <div class="panel">
     <h2>Cherrymist</h2>
     <p class="muted" id="cherrymistSummary"></p>
-    <div class="tablewrap"><table class="cherrymist-table"><thead><tr><th>Obra no catálogo</th><th>Correspondência no inventário</th><th>Autor</th><th>País de origem</th><th>EPUB(s) / ID(s)</th></tr></thead><tbody id="cherrymistBody"></tbody></table></div>
+    <div class="tablewrap"><table class="cherrymist-table"><thead><tr><th>Obra no catálogo</th><th>Correspondência local</th><th>Autor</th><th>Origem</th><th>EPUB local / ID</th><th>Evidência no EPUB</th></tr></thead><tbody id="cherrymistBody"></tbody></table></div>
   </div>
   </div>
   <div id="novelsPanel" class="hidden" role="tabpanel" aria-labelledby="nav-novels">
@@ -388,10 +437,10 @@ td{max-width:380px;overflow-wrap:anywhere}
       <aside class="novel-facets">
         <div class="novel-facet-heading"><strong>Filtros</strong><button class="novel-clear" type="button" onclick="clearNovelFilters()">Limpar filtros</button></div>
         <div class="novel-facet-tabs" role="group" aria-label="Tipo de filtro">
-          <button type="button" class="novel-facet-tab" id="novel-facet-country" aria-pressed="true" onclick="setNovelSidebarFacet('country')">País</button>
+          <button type="button" class="novel-facet-tab" id="novel-facet-country" aria-pressed="true" onclick="setNovelSidebarFacet('country')">Origem</button>
           <button type="button" class="novel-facet-tab" id="novel-facet-author" aria-pressed="false" onclick="setNovelSidebarFacet('author')">Autor</button>
         </div>
-        <input id="novelFacetSearch" class="novel-facet-search" placeholder="Filtrar país..." aria-label="Filtrar país" oninput="renderNovelFacetFilters()">
+        <input id="novelFacetSearch" class="novel-facet-search" placeholder="Filtrar origem..." aria-label="Filtrar origem" oninput="renderNovelFacetFilters()">
         <div id="novelFacetFilters" class="novel-facet-list"></div>
       </aside>
       <div class="novel-results">
@@ -408,7 +457,7 @@ td{max-width:380px;overflow-wrap:anywhere}
           </div>
           <div class="novel-toolbar-right"><button class="novel-export" type="button" onclick="exportNovelSummaryCSV()">Exportar CSV</button></div>
         </div>
-        <div class="tablewrap"><table class="novel-summary-table"><thead><tr><th>Obra</th><th>Autor</th><th>Protagonistas</th><th>Nacionalidade</th><th>Qtd. EPUBs</th><th aria-label="Expandir"></th></tr></thead><tbody id="novelSummaryBody"></tbody></table></div>
+        <div class="tablewrap"><table class="novel-summary-table"><thead><tr><th>Obra</th><th>Autor</th><th>Protagonistas</th><th>Origem</th><th>Qtd. EPUBs</th><th aria-label="Expandir"></th></tr></thead><tbody id="novelSummaryBody"></tbody></table></div>
         <div class="novel-summary-footer"><div class="novel-summary-footer-left"><select id="novelPageSize" class="novel-page-size" aria-label="Quantidade por página" onchange="setNovelPageSize(this.value)"><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option><option>60</option></select></div><span id="novelSummaryRange" class="novel-summary-range"></span><div class="novel-summary-pager"><button type="button" id="novelSummaryPrev" aria-label="Página anterior" onclick="moveNovelSummary(-1)">&lt;&lt;</button><span id="novelSummaryPageLabel"></span><button type="button" id="novelSummaryNext" aria-label="Próxima página" onclick="moveNovelSummary(1)">&gt;&gt;</button></div></div>
       </div>
     </div>
@@ -425,7 +474,7 @@ td{max-width:380px;overflow-wrap:anywhere}
         placeholder="Buscar título, arquivo ou autor"
         oninput="filterRecords()">
       <select id="nationality" onchange="filterRecords()">
-        <option value="">País de origem</option>
+        <option value="">Origem</option>
         <option value="__nao_identificado__">Não identificado</option>
       </select>
       <button class="action" onclick="exportCSV()">
@@ -436,7 +485,7 @@ td{max-width:380px;overflow-wrap:anywhere}
       <table class="explorer-table">
         <thead><tr>
           <th>Novel</th><th>Autor</th>
-          <th>País de origem</th><th>Protagonistas</th>
+          <th>Origem</th><th>Protagonistas</th>
           <th>Verificadas</th><th>EPUBs</th><th aria-label="Expandir"></th>
         </tr></thead>
         <tbody id="tbody"></tbody>
@@ -462,18 +511,37 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,
   '"':'&quot;',"'":'&#39;'}[c]));
 function groupNorm(value){return String(value||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]+/g,' ').trim()}
 function countryNorm(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]+/g,' ').trim()}
-function countryName(value){const key=countryNorm(value);if(key.startsWith('nao identificad'))return 'Não identificada';const names={china:'China',chinesa:'China','coreia do sul':'Coreia do Sul','sul coreana':'Coreia do Sul','estados unidos':'Estados Unidos',estadunidense:'Estados Unidos','united states':'Estados Unidos','united states of america':'Estados Unidos',tailandia:'Tailândia',tailandesa:'Tailândia',canada:'Canadá',canadense:'Canadá','reino unido':'Reino Unido',britanica:'Reino Unido',britanico:'Reino Unido',japan:'Japão',japanese:'Japão',japao:'Japão',japonesa:'Japão',italia:'Itália',italiana:'Itália',dinamarca:'Dinamarca',dinamarquesa:'Dinamarca',australia:'Austrália',australiana:'Austrália',filipina:'Filipinas',filipinas:'Filipinas',mexico:'México',mexicana:'México',russia:'Rússia',russa:'Rússia',irlanda:'Irlanda',irlandesa:'Irlanda',singapura:'Singapura',singapurense:'Singapura',suecia:'Suécia',sueca:'Suécia',espanha:'Espanha',espanhola:'Espanha',chile:'Chile',chilena:'Chile',taiwan:'Taiwan',taiwanesa:'Taiwan','nova zelandia':'Nova Zelândia','republica tcheca':'República Tcheca',india:'Índia'};return names[key]||String(value||'').trim()}
+function countryName(value){const key=countryNorm(value);if(key==='nao identificada obra original em ingles')return 'Internacional (OEL — inglês)';if(key==='nao identificada fanfic em ingles')return 'Fanfic (inglês)';if(key.startsWith('nao identificad'))return 'Não identificada';const names={china:'China',chinesa:'China','coreia do sul':'Coreia do Sul','sul coreana':'Coreia do Sul','estados unidos':'Estados Unidos',estadunidense:'Estados Unidos','united states':'Estados Unidos','united states of america':'Estados Unidos',tailandia:'Tailândia',tailandesa:'Tailândia',canada:'Canadá',canadense:'Canadá','reino unido':'Reino Unido',britanica:'Reino Unido',britanico:'Reino Unido',japan:'Japão',japanese:'Japão',japao:'Japão',japonesa:'Japão',italia:'Itália',italiana:'Itália',dinamarca:'Dinamarca',dinamarquesa:'Dinamarca',australia:'Austrália',australiana:'Austrália',filipina:'Filipinas',filipinas:'Filipinas',mexico:'México',mexicana:'México',russia:'Rússia',russa:'Rússia',irlanda:'Irlanda',irlandesa:'Irlanda',singapura:'Singapura',singapurense:'Singapura',suecia:'Suécia',sueca:'Suécia',espanha:'Espanha',espanhola:'Espanha',chile:'Chile',chilena:'Chile',taiwan:'Taiwan',taiwanesa:'Taiwan','nova zelandia':'Nova Zelândia','republica tcheca':'República Tcheca',india:'Índia'};return names[key]||String(value||'').trim()}
+// IDs de EPUB sem obra_chave conferidos por autor e título no catálogo e no arquivo.
+const chinaEpubWorkKeys=new Map([
+  ['obra_02348',['92560']],['obra_02808',['90558','80091']],
+  ['obra_02269',['90361','82106']],['obra_00802',['83315']],
+  ['obra_02254',['78182']],['obra_01470',['77903']],
+  ['obra_01914',['72755']],['obra_01385',['71825']],
+  ['obra_02772',['60511']],['obra_02718',['59289']],
+  ['obra_00034',['45853','17062','1933']],
+  ['obra_03006',['19662','3269']],['obra_01423',['4302']]
+].flatMap(([key,ids])=>ids.map(id=>[id,key])));
+function novelAliasKey(record,name){
+  const title=groupNorm(name);if(!title)return '';
+  if(record.nacionalidade_obra!=='China')return title;
+  const author=novelIdentityText(record.autor_obra||record.autor);
+  return author?'china|'+author+'|'+title:'';
+}
 function makeNovelGroups(records){
   const aliases=new Map(),ambiguous=new Set();
   records.filter(r=>r.obra_chave).forEach(r=>[r.obra_verificada,r.titulo,r.catalogo].filter(Boolean).forEach(name=>{
-    const alias=groupNorm(name);if(!alias)return;
+    const alias=novelAliasKey(r,name);if(!alias)return;
     if(aliases.has(alias)&&aliases.get(alias)!==String(r.obra_chave))ambiguous.add(alias);else aliases.set(alias,String(r.obra_chave));
   }));
   const groups=new Map();
   records.forEach((r,index)=>{
     const title=r.obra_verificada||r.catalogo||r.titulo||r.nome||'Novel sem título';
-    const alias=groupNorm(title),mapped=!ambiguous.has(alias)?aliases.get(alias):'';
-    const key=r.obra_chave?'obra:'+r.obra_chave:(mapped?'obra:'+mapped:'titulo:'+alias+'|autor:'+groupNorm(r.autor_obra||r.autor));
+    const alias=groupNorm(title),lookup=novelAliasKey(r,title);
+    const mapped=lookup&&!ambiguous.has(lookup)?aliases.get(lookup):'';
+    const reviewed=r.nacionalidade_obra==='China'?chinaEpubWorkKeys.get(String(r.id)):'';
+    const workKey=r.obra_chave||reviewed||mapped;
+    const key=workKey?'obra:'+workKey:'titulo:'+alias+'|autor:'+groupNorm(r.autor_obra||r.autor);
     let g=groups.get(key);if(!g){g={key,title,records:[],authors:[],countries:[],protagonists:[],timestamps:[],verifiedKeys:new Set()};groups.set(key,g)}
     g.records.push(r);
     const author=r.autor_obra||r.autor;if(author&&!g.authors.includes(author))g.authors.push(author);
@@ -492,7 +560,127 @@ function makeNovelGroups(records){
     return g;
   }).sort((a,b)=>a.title.localeCompare(b.title,'pt-BR',{sensitivity:'base'}));
 }
+function novelIdentityText(value){
+  return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+    .toLocaleLowerCase('pt-BR').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+}
+function novelVolumeTitle(title){
+  let value=String(title||'').trim(),previous;
+  const prefix=/^(?:vol(?:ume)?|book|livro|tomo|parte?|part)\.?\s*(?:\d+|[ivxlcdm]+)\s*[-–—:]?\s+/i;
+  const suffix=/(?:\s+|[\[(]\s*|[-–—:,]\s*)(?:vol(?:ume)?|book|livro|tomo|parte?|part|v)\.?\s*(?:\d+|[ivxlcdm]+)(?:\s*[-–]\s*(?:\d+|[ivxlcdm]+))?\s*[\])]*$/i;
+  do{
+    previous=value;
+    value=value.replace(prefix,'').replace(suffix,'').replace(/[-–—:,]\s*$/,'').trim();
+  }while(value!==previous);
+  return value;
+}
+// Três arquivos de volume 1 com nome truncado, junto de volumes confirmados da mesma obra.
+const truncatedScumVolumeIds=new Set(['32859','6864','37']);
+const desireWorkKeys=new Set(['obra_00842','obra_00898','obra_02641']);
+const turbulentWorldKeys=new Set(['obra_00021','obra_00044','obra_00944','obra_01186','obra_01705','obra_02621']);
+const horrorGameKeys=new Set(['obra_00200','obra_00774','obra_00775','obra_00945','obra_01135','obra_01136','obra_01254','obra_02398','obra_02524','obra_02595','obra_02604','obra_03018','obra_03019']);
+const fClassGuideKeys=new Set(['obra_02103','obra_02108']);
+// Chaves conferidas por autor, personagens e referência quando os títulos diferem entre edições.
+const chinaAuthorWorkLabels=new Map([
+  ["The King's Avatar",['obra_00605','obra_00606','obra_00607','obra_00608','obra_00609','obra_00610','obra_00611','obra_00612','obra_00613','obra_00617','obra_00618','obra_00619','obra_00620','obra_00621','obra_00622','obra_00623','obra_00624']],
+  ['S.C.I Mystery Series',['obra_00304','obra_00305','obra_00306','obra_00307','obra_00919','obra_02625']],
+  ['After Rebirth, The Real Young Master Began to Maintain His Health',['obra_00786','obra_02000']],
+  ['Little Mushroom',['obra_00127','obra_00128','obra_00211','obra_00212','obra_01507','obra_01979','obra_01996']],
+  ['The Wife Comes First (Qi Wei Shang)',['obra_00199','obra_00923','obra_01886','obra_01912']],
+  ["The Legendary Master's Wife",['obra_00083','obra_00084','obra_00085','obra_00086','obra_00087','obra_00350','obra_02481','obra_02504','obra_02505','obra_02506','obra_02507','obra_02508','obra_02509']],
+  ['The Easter Egg Game (The Lucky Egg Game)',['obra_00188','obra_00224','obra_00225','obra_00226','obra_02135','obra_02136']],
+  ['Kaleidoscope of Death',['obra_00308','obra_00309','obra_00632','obra_01396','obra_01824','obra_02253','obra_02556','obra_02557','obra_02558','obra_02898']],
+  ['Golden Terrace',['obra_00181','obra_00182','obra_00448','obra_00449','obra_00667']],
+  ["There's Something Wrong with the Chief (Du Zhu You Bing)",['obra_00302','obra_01069','obra_02312','obra_02835','obra_02842','obra_03003']],
+  ['The Husky and His White Cat Shizun',['obra_00018','obra_00357','obra_00418','obra_00644','obra_00645','obra_00672','obra_00776','obra_00777','obra_00828','obra_01063','obra_01066','obra_01334','obra_01347','obra_01348','obra_01661','obra_02477']],
+  ['Bat (蝙蝠)',['obra_00705','obra_01559','obra_01560']],
+  ['Thousand Autumns',['obra_00030','obra_00205','obra_00823','obra_01689']],
+  ['Hidden Love',['obra_02021','obra_02094','obra_02581']],
+  ['Descent from an Altitude of 10,000 Meters (The Approach)',['obra_00355','obra_01054','obra_02568','obra_02723']],
+  ['Art Thou Ailing? (Jun You Ji Fou)',['obra_01234','obra_01524','obra_02256']],
+  ['Golden Jade Dynasty',['obra_01931','obra_01934','obra_01958']],
+  ['Ashes (Yan Hui)',['obra_01668','obra_02100']],
+  ['At the World’s Mercy',['obra_02088','obra_02257','obra_02697']],
+  ['Dawning (After Dawn)',['obra_00551','obra_00959']],
+  ['A Letter from Keanu Reeves',['obra_00817','obra_01059','obra_02343','obra_02432','obra_02640','obra_02651','obra_02912']],
+  ["The White Cat's Divine Scratching Post",['obra_01581','obra_02315','obra_02829','obra_03006']],
+  ['Can Ci Pin (The Defective)',['obra_00183','obra_00222','obra_00293','obra_01079']],
+  ['Bottom A, Top O',['obra_00813','obra_01049','obra_02379','obra_02385']],
+  ['Fake Slackers',['obra_00473','obra_00474','obra_00487','obra_00488','obra_02520']],
+  ['FOG [e-sports]',['obra_00002','obra_01333','obra_01800']],
+  ["Chusan's Liuyi Children's Day",['obra_01296','obra_01364','obra_01693','obra_02105','obra_02106','obra_02786','obra_02787']],
+  ["Don't Pick Up Boyfriends From the Trash Bin",['obra_02482','obra_02483','obra_02571','obra_02587','obra_02692']],
+  ['The Villain’s White Halo',['obra_01448','obra_01980','obra_02731']],
+  ['The Plough',['obra_00809','obra_02452']],
+  ['A Round Trip to Love',['obra_01670','obra_01672','obra_01673']],
+  ['Me to the Universe',['obra_00311','obra_02690']],
+  ['Peach Omen',['obra_02358','obra_02422']],
+  ['My Beloved Visits My Grave',['obra_01111','obra_01121']],
+  ['Blooming Romance',['obra_01349','obra_02896']],
+  ['Blade of the Galactic Empire',['obra_01225','obra_01226']],
+  ["The Transmigrated Li Jin's Daily Farming Life",['obra_02602','obra_02689']],
+  ['Blossoms of Power',['obra_01629','obra_01874']],
+  ['Love Beyond the Grave',['obra_01336','obra_01341']],
+  ['The Lament of Autumn',['obra_02359','obra_02360']],
+  ['After the Disabled God of War Became My Concubine',['obra_02503','obra_02914']],
+  ['An Apple',['obra_01434','obra_01660']],
+  ['Matrilocal Marriage (Ruzhui)',['obra_00157','obra_02684']],
+  ['Wu Chang Jie',['obra_00034','obra_00874']],
+  ["The Salted Fish's Political Marriage",['obra_01090','obra_02063']],
+  ['Malevolent Curse (Xiong Sui)',['obra_01312','obra_01363']],
+  ['Rose and Renaissance',['obra_00943','obra_01165']],
+  ['Silent Reading (Mo Du)',['obra_00469','obra_02233']],
+  ['Love Spell (Qing Gu)',['obra_01960','obra_02182']],
+  ['Paper Plane (Paper Airplane)',['obra_01286','obra_01421']],
+  ['Love Out of Sync',['obra_01865','obra_01866']],
+  ['Instinct Game',['obra_01744','obra_01746']],
+  ['The Love Never Sets',['obra_01152','obra_01190']],
+  ['Killer and Healer',['obra_02548','obra_02606']],
+  ['The Return of Cambrian Period',['obra_00358','obra_02593']],
+  ['I Ship My Adversary X Me',['obra_00654','obra_01470']],
+  ['Welcome to the Nightmare Live',['obra_01271','obra_01411','obra_02580','obra_02808']],
+  ['Death Progress Bar',['obra_01914','obra_02908']],
+  ['Error: Metamorphosis',['obra_02470','obra_02749','obra_02772']],
+  ["Don't Hide From Me",['obra_02609','obra_02718']],
+  ['How to Survive as a Villain',['obra_01423','obra_01915','obra_02672','obra_02804']],
+  ['The Grave Robbers’ Chronicles (Daomu Biji)',['obra_00139','obra_00140']],
+  ['The Mystic Nine',['obra_00143','obra_00144','obra_00151']],
+  ['The Marquis Is Innocent',['obra_01072','obra_01690']],
+  ['The Imperial Uncle',['obra_00025','obra_00208','obra_00638']],
+  ['The Rebirth of the General Who Always Sees Himself as a Replacement',['obra_01325','obra_02785']],
+  ['Jianghu Demolition Squad',['obra_02400','obra_02708']],
+  ['Till Death Do Us Part',['obra_00280','obra_02438']],
+  ['My Husband and I Sleep in a Coffin',['obra_02414','obra_02528']],
+  ['This Venerable One Really Didn’t Abandon My Familiar',['obra_02719','obra_02721']],
+  ['The Sickly Beauty Substitute Called It Quits',['obra_02513','obra_02514','obra_02515']],
+  ['The Sword Named No Way Out',['obra_00629','obra_02982']],
+  ['The Blind Concubine',['obra_00049','obra_00877','obra_01124']],
+  ['[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught',['obra_01775','obra_01843']]
+].flatMap(([title,keys])=>keys.map(key=>[key,title])));
 function novelSeriesFamily(group){
+  const reviewedKey=group.key.startsWith('obra:')?group.key.slice(5):'';
+  if(group.country==='China'&&chinaAuthorWorkLabels.has(reviewedKey))
+    return chinaAuthorWorkLabels.get(reviewedKey);
+  if(group.records.length&&group.records.every(record=>fClassGuideKeys.has(String(record.obra_chave))))
+    return 'Let This F-Class Guide Live in Peace!';
+  if(novelIdentityText(group.title)==='the scum villain s self 1'&&group.records.length&&
+    group.records.every(record=>truncatedScumVolumeIds.has(String(record.id))&&!record.obra_chave))
+    return 'The Scum Villain’s Self-Saving System';
+  if(group.records.length&&group.records.every(record=>desireWorkKeys.has(String(record.obra_chave))))
+    return 'Desire (垂涎)';
+  if(group.records.length&&group.records.every(record=>turbulentWorldKeys.has(String(record.obra_chave))))
+    return 'To Rule in a Turbulent World (乱世为王)';
+  if(group.records.length&&group.records.every(record=>horrorGameKeys.has(String(record.obra_chave))))
+    return 'I Became a God in a Horror Game';
+  const identity=novelIdentityText(group.title);
+  const author=group.authors.length===1?novelIdentityText(group.authors[0]):'';
+  if(identity.includes('2022 zhongyuan mini theatre'))return '';
+  if(group.country==='Coreia do Sul'){
+    if(/^boy season(?: |$)/.test(author)&&/^(?:code name|codename) anastasia(?: novel| https t me [\p{L}\p{N} ]+)?$/u.test(identity))
+      return 'Codename Anastasia';
+    if(/^suji kim(?: |$)/.test(author)&&/^under the oak tree(?:$| esp$| season [12] [0-9]+$)/.test(identity))
+      return 'Under the Oak Tree';
+  }
   const text=[group.title,...group.records.map(r=>r.obra_verificada||r.catalogo||r.titulo||'')].join(' ').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
   if(/fanfic|fanfiction/.test(text))return '';
   if(/\bfor a thousand autum(?:n)?s\b/.test(text))return '';
@@ -512,13 +700,13 @@ function novelSeriesFamily(group){
     ['The Summer Hikaru Died',/summer hikaru died/],['You’ve Got Mail',/you.ve got mail|perils of pigeon post/],['Your Forma',/your forma|electronic investigator echika/],
     ['The Disabled Tyrant’s Beloved Pet Fish',/disabled tyrant.s beloved pet fish|canji baojun de zhangxin yu/],['Secrets of the Silent Witch',/secrets of the silent witch/],
     ['Lord of Mysteries',/lord of (?:the )?mysteries/],['Eiderdown',/\beiderdown\b/],['Golden Terrace',/golden terrace/],['Hell Is Dark with No Flowers',/hell is dark with no flowers/],
-    ['Hidden Love',/\bhidden love\b/],['Interminable',/\binterminable\b/],['Look at Me',/look at me/],['Love Between Fairy and Devil',/love between fairy and devil/],
+    ['Hidden Love',/\bhidden love\b/],['Interminable',/\binterminable\b/],['Look at Me',/^look at me(?: |$)/],['Love Between Fairy and Devil',/love between fairy and devil/],
     ['Omniscient Reader’s Viewpoint',/omniscient readers? viewpoint/],['Panguan: The Twelfth Gate',/panguan|twelfth gate/],['The Only Sunflower I See Is You',/only sunflower i see is you/],
     ['The Villain’s White Halo',/villain.s white halo/],['At the World’s Mercy',/at the world.s mercy/],['Deadman Switch',/deadman switch/],
     ['Go For It, Nakamura!',/go for it(?: again)? nakamura/],['Earthian',/\bearthian\b/],['Megumi & Tsugumi',/megumi.*tsugumi/],['School Trip: Joined a Group I’m Not Close To',/school trip joined a group/],
     ['Strawberry Panic!',/strawberry panic/],['Rose & Renaissance',/rose renaissance/],['Trascendiendo la Semilla del Mal',/trascendiendo la semilla del mal/],
     ['The Scum Villain’s Self-Saving System',/scum villain.s self[- ]?saving system|ren zha fanpai zijiu xitong|\bsvss\b|el sistema de autosalvacion del villano escoria|il sistema di salvataggio del peggiore dei cattivi|人渣反派自救系统/],
-    ['Yin Ke',/\byin ke\b|阴客|2022 zhongyuan mini[ -]theatre/],
+    ['Yin Ke',/\byin ke\b|阴客/],
     ['A Certain Someone',/\ba certain someone\b|\bmou mou\b|某某/],
     ['Black Sky',/black sk(?:y|ay)|hei ?tian|黑天/],
     ['First-Class Lawyer',/first[- ]class lawyer/],
@@ -551,16 +739,137 @@ function groupNovelSeries(groups){
     members.forEach(member=>consumed.add(member));
     const records=members.flatMap(member=>member.records);
     const unique=values=>[...new Set(values.filter(Boolean))];
-    const authors=unique(members.flatMap(member=>member.authors));
-    const protagonists=unique(members.flatMap(member=>member.protagonistList));
+    const turbulent=family==='To Rule in a Turbulent World (乱世为王)';
+    const authors=turbulent?['Fei Tian Ye Xiang (非天夜翔)']:unique(members.flatMap(member=>member.authors));
+    const protagonists=turbulent?['You Miao','Li Zhifeng']:(family==='I Became a God in a Horror Game'?
+      ['Bai Liu (白柳)','Xie Ta (谢塔)']:(family==='The Imperial Uncle'?
+      ['Cheng Jun (Prince Huai)','Liu Tongyi']:(family==='The Mystic Nine'?
+      []:unique(members.flatMap(member=>member.protagonistList)))));
     const countries=unique(members.map(member=>member.country).filter(country=>country!=='Pendente'&&country!=='Não identificada'&&country!=='Conflito'));
     const timestamps=unique(members.map(member=>member.verified).filter(value=>value&&value!=='Pendente'));
     const titles=unique(members.flatMap(member=>[member.title,...member.records.map(r=>r.obra_verificada||r.catalogo||r.titulo||'')]).filter(title=>title&&title!==family));
+    if(family==='Desire (垂涎)')titles.push('ABO Desire');
+    if(turbulent)titles.push('LSWW','Luanshi Wei Wang');
     result.push({key:'serie:'+family,title:family,records,authors,countries,protagonistList:protagonists,author:authors.join(' / ')||'—',protagonists:protagonists.join(' / ')||'—',country: new Set(members.map(member=>member.country).filter(value=>value!=='Pendente')).size>1&&countries.length>1?'Conflito':(countries[0]||members.find(member=>member.country==='Não identificada')?.country||'Pendente'),verified:timestamps[0]||'Pendente',alternateTitles:titles});
   }
   return [...groups.filter(group=>!consumed.has(group)),...result].sort((a,b)=>a.title.localeCompare(b.title,'pt-BR',{sensitivity:'base'}));
 }
-const novelGroups=groupNovelSeries(makeNovelGroups(DATA.records));
+// Etapas por nacionalidade: mesmo autor e título idêntico após retirar apenas o número do volume.
+function groupCountryVolumes(groups,country){
+  const buckets=new Map();
+  groups.forEach(group=>{
+    if(group.country!==country||group.authors.length!==1)return;
+    const author=novelIdentityText(group.authors[0]);
+    const base=novelIdentityText(novelVolumeTitle(group.title));
+    if(!author||['pendente','nao identificado','desconhecido','unknown'].includes(author)||base.length<6)return;
+    const key=country+'|'+author+'|'+base;
+    if(!buckets.has(key))buckets.set(key,[]);
+    buckets.get(key).push(group);
+  });
+  const consumed=new Set(),merged=[];
+  for(const [key,members] of buckets){
+    if(members.length<2)continue;
+    members.forEach(member=>consumed.add(member));
+    const unique=values=>[...new Set(values.filter(Boolean))];
+    const plain=members.find(member=>novelVolumeTitle(member.title)===member.title.trim());
+    const title=plain?plain.title:novelVolumeTitle(members[0].title);
+    const records=members.flatMap(member=>member.records)
+      .sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'));
+    const authors=unique(members.flatMap(member=>member.authors));
+    const protagonistList=unique(members.flatMap(member=>member.protagonistList));
+    const alternateTitles=unique(members.flatMap(member=>[member.title,...(member.alternateTitles||[])]))
+      .filter(value=>value!==title);
+    merged.push({key:'volume:'+key,title,records,authors,countries:[country],protagonistList,
+      author:authors.join(' / ')||'—',protagonists:protagonistList.join(' / ')||'—',country,
+      verified:members.find(member=>member.verified&&member.verified!=='Pendente')?.verified||'Pendente',
+      alternateTitles});
+  }
+  return [...groups.filter(group=>!consumed.has(group)),...merged];
+}
+function novelSpecificReference(value){
+  let url;
+  try{url=new URL(String(value||''))}catch{return ''}
+  const host=url.hostname.toLowerCase().replace(/^www\./,'');
+  if(host==='novelupdates.com'){
+    const match=url.pathname.match(/^\/series\/([^/]+)\/?$/i);
+    return match?'nu:'+match[1].toLowerCase():'';
+  }
+  if(/(^|\.)jjwxc\.(?:net|com)$/.test(host)){
+    const id=url.searchParams.get('novelid')||url.pathname.match(/^\/book2\/(\d+)(?:\/|$)/)?.[1]||'';
+    return /^\d+$/.test(id)?'jjwxc:'+id:'';
+  }
+  return '';
+}
+const chinaReferenceTitles=new Map([
+  ['nu:case-file-compendium','Case File Compendium (Bing An Ben)'],
+  ['nu:the-husky-and-his-white-cat-shizun','The Husky and His White Cat Shizun'],
+  ['nu:the-kings-avatar',"The King's Avatar"],
+  ['nu:global-survival-from-a-small-wooden-cabin-to-a-magic-farm','Global Survival: From a Small Wooden Cabin to a Magic Farm'],
+  ['jjwxc:379995','S.C.I Mystery Series'],
+  ['jjwxc:6947226','After Rebirth, The Real Young Master Began to Maintain His Health']
+]);
+function groupChinaByReference(groups){
+  const parent=groups.map((_,index)=>index);
+  const root=index=>{while(parent[index]!==index){parent[index]=parent[parent[index]];index=parent[index]}return index};
+  const buckets=new Map(),references=groups.map(()=>new Set());
+  groups.forEach((group,index)=>{
+    if(group.country!=='China'||group.authors.length!==1)return;
+    const author=novelIdentityText(group.authors[0]);
+    if(!author||['pendente','nao identificado','desconhecido','unknown'].includes(author))return;
+    for(const record of group.records){
+      const ref=novelSpecificReference(record.referencia_obra||record.fonte_nacionalidade_obra);
+      if(!ref||ref==='jjwxc:2516402')continue;
+      references[index].add(ref);
+      const key=author+'|'+ref;
+      if(!buckets.has(key))buckets.set(key,[]);
+      if(!buckets.get(key).includes(index))buckets.get(key).push(index);
+    }
+  });
+  for(const members of buckets.values()){
+    if(members.length<2)continue;
+    const first=root(members[0]);
+    members.slice(1).forEach(index=>{parent[root(index)]=first});
+  }
+  const components=new Map();
+  groups.forEach((group,index)=>{
+    const key=root(index);if(!components.has(key))components.set(key,[]);
+    components.get(key).push({group,index});
+  });
+  const unique=values=>[...new Set(values.filter(Boolean))];
+  const titlePenalty=group=>{
+    const title=String(group.title||'');
+    let penalty=group.key.startsWith('serie:')?-20:0;
+    if(/^[a-f0-9]{24,64}$/i.test(title)||/^input$/i.test(title))penalty+=100;
+    if(/https?:|@|z[- ]?library|bokgen|pdfcoffee|\b(?:vol(?:ume)?|book|chapter|part|extras?|anthology|complete|completed|edition|season|mtl|esp)\b|#\d/i.test(title))penalty+=20;
+    return penalty+title.length/1000;
+  };
+  const result=[];
+  for(const component of components.values()){
+    if(component.length===1){result.push(component[0].group);continue}
+    const members=component.map(item=>item.group);
+    const preferred=members.slice().sort((a,b)=>titlePenalty(a)-titlePenalty(b))[0];
+    const refs=unique(component.flatMap(item=>[...references[item.index]]));
+    const title=refs.map(ref=>chinaReferenceTitles.get(ref)).find(Boolean)||preferred.title;
+    const records=members.flatMap(member=>member.records)
+      .sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'));
+    const authors=unique(members.flatMap(member=>member.authors));
+    const protagonistSource=members.slice().sort((a,b)=>b.records.length-a.records.length)
+      .find(member=>member.protagonistList?.length>=2&&member.protagonistList.every(value=>value!=='Pendente'));
+    const protagonistList=protagonistSource?protagonistSource.protagonistList.slice():
+      unique(members.flatMap(member=>member.protagonistList));
+    const alternateTitles=unique(members.flatMap(member=>[member.title,...(member.alternateTitles||[])]))
+      .filter(value=>value!==title);
+    result.push({key:'fonte:'+members.map(member=>member.key).sort()[0],title,records,authors,
+      countries:['China'],protagonistList,author:authors.join(' / ')||'—',
+      protagonists:protagonistList.join(' / ')||'—',country:'China',
+      verified:members.find(member=>member.verified&&member.verified!=='Pendente')?.verified||'Pendente',
+      alternateTitles});
+  }
+  return result;
+}
+const novelGroups=groupChinaByReference(['China','Coreia do Sul','Estados Unidos'].reduce(
+  (groups,country)=>groupCountryVolumes(groups,country),groupNovelSeries(makeNovelGroups(DATA.records))))
+  .sort((a,b)=>a.title.localeCompare(b.title,'pt-BR',{sensitivity:'base'}));
 let filtered=novelGroups.slice(),page=0,novelSummaryPage=0;
 const selectedNovelCountries=new Set(),selectedNovelAuthors=new Set();
 let novelSidebarFacet='country';
@@ -569,25 +878,35 @@ const pageSize=50;
 let novelSummaryPageSize=10;
 
 function navigate(view){
-  if(!['overview','novels','explorer'].includes(view))view='overview';
+  if(!['overview','novels'].includes(view))view='overview';
   const pageView=view==='novels'?'overview':view;
   for(const name of ['overview','explorer'])$(name).classList.toggle('hidden',name!==pageView);
   $('overviewPanel').classList.toggle('hidden',view!=='overview');
   $('novelsPanel').classList.toggle('hidden',view!=='novels');
-  for(const name of ['overview','novels','explorer'])$('nav-'+name).classList.toggle('active',name===view);
+  for(const name of ['overview','novels'])$('nav-'+name).classList.toggle('active',name===view);
   location.hash=view;
 }
 function metric(label,value){
   return '<div class="card"><div class="label">'+esc(label)+
     '</div><div class="number">'+fmt(value)+'</div></div>';
 }
+const obraOrigins=(()=>{
+  const country_details={};
+  for(const group of novelGroups){
+    if(['Pendente','Não identificada','Conflito','INDEFINIDO'].includes(group.country))continue;
+    const entry=country_details[group.country]||(country_details[group.country]={work_count:0,epub_count:0});
+    entry.work_count++;
+    entry.epub_count+=group.records.length;
+  }
+  const details=Object.values(country_details);
+  return {work_count:details.reduce((sum,item)=>sum+item.work_count,0),
+    epub_count:details.reduce((sum,item)=>sum+item.epub_count,0),country_details};
+})();
 const total=DATA.records.length;
 $('cards').innerHTML=
-  metric('EPUBs analisados',total)+
-  metric('Grupos por novel',novelGroups.length)+
-  metric('Obras com país de origem identificado',DATA.obra_origins?.work_count||0)+
-  metric('EPUBs associados a obras com país',DATA.obra_origins?.epub_count||0);
-const obraOrigins=DATA.obra_origins||{work_count:0,epub_count:0,countries:{},country_details:{}};
+  metric('EPUBs locais confirmados',total)+
+  metric('Obras com origem classificada',obraOrigins.work_count)+
+  metric('EPUBs com origem classificada',obraOrigins.epub_count);
 $('verifiedOriginsSummary').textContent=
   fmt(obraOrigins.work_count)+' obras · '+fmt(obraOrigins.epub_count)+
   ' EPUBs associados';
@@ -597,7 +916,7 @@ function renderOriginsDonut(){
   if(!entries.length)entries=Object.entries(obraOrigins.countries||{}).map(([country,works])=>({country:countryName(country),works:Number(works||0),epubs:0}));
   const merged=new Map();entries.forEach(item=>{const old=merged.get(item.country)||{country:item.country,works:0,epubs:0};old.works+=item.works;old.epubs+=item.epubs;merged.set(item.country,old)});
   entries=[...merged.values()].filter(item=>item.works>0).sort((a,b)=>b.works-a.works);
-  if(!entries.length){$('verifiedOrigins').innerHTML='<p class="muted">Nenhum país de origem revisado.</p>';return}
+  if(!entries.length){$('verifiedOrigins').innerHTML='<p class="muted">Nenhuma origem classificada.</p>';return}
   const top=entries.slice(0,6),rest=entries.slice(6);
   if(rest.length)top.push({country:'Outros ('+rest.length+' países)',works:rest.reduce((n,x)=>n+x.works,0),epubs:rest.reduce((n,x)=>n+x.epubs,0)});
   const colors=['#3863e9','#4ba5df','#805be8','#eda33a','#50b58c','#df4f98','#98a5b8'];
@@ -605,7 +924,7 @@ function renderOriginsDonut(){
   let offset=0;
   const segments=top.map((item,index)=>{const length=circ*item.works/total;const color=colors[index%colors.length];const pct=(100*item.works/total).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});const start=offset;offset+=length;return '<circle class="donut-segment" cx="100" cy="100" r="'+radius+'" stroke="'+color+'" stroke-dasharray="'+length+' '+(circ-length)+'" stroke-dashoffset="'+(-start)+'" transform="rotate(-90 100 100)" tabindex="0" role="img" aria-label="'+esc(item.country+': '+fmt(item.works)+' obras e '+fmt(item.epubs)+' EPUBs')+'" data-country="'+esc(item.country)+'" data-works="'+item.works+'" data-epubs="'+item.epubs+'"><title>'+esc(item.country+' · '+fmt(item.works)+' obras · '+fmt(item.epubs)+' EPUBs · '+pct+'%')+'</title></circle>'}).join('');
   const legend=top.map((item,index)=>'<div class="donut-legend-item"><i class="donut-swatch" style="background:'+colors[index%colors.length]+'"></i><span>'+esc(item.country)+'</span><span class="donut-legend-count">'+fmt(item.works)+' obras<span>'+fmt(item.epubs)+' EPUBs</span></span></div>').join('');
-  $('verifiedOrigins').innerHTML='<div class="donut-layout"><div class="donut-viz"><svg viewBox="0 0 200 200" role="img" aria-label="Distribuição das obras por país de origem"><circle cx="100" cy="100" r="'+radius+'" fill="none" stroke="#e7edf5" stroke-width="32"></circle>'+segments+'</svg><div class="donut-center"><strong>'+fmt(obraOrigins.work_count||total)+'</strong><span>obras totais</span></div></div><div class="donut-legend">'+legend+'</div></div>';
+  $('verifiedOrigins').innerHTML='<div class="donut-layout"><div class="donut-viz"><svg viewBox="0 0 200 200" role="img" aria-label="Distribuição das obras por origem"><circle cx="100" cy="100" r="'+radius+'" fill="none" stroke="#e7edf5" stroke-width="32"></circle>'+segments+'</svg><div class="donut-center"><strong>'+fmt(obraOrigins.work_count)+'</strong><span>obras com origem</span></div></div><div class="donut-legend">'+legend+'</div></div>';
   const tooltip=$('donutTooltip');
   document.querySelectorAll('.donut-segment').forEach(segment=>{
     const show=event=>{tooltip.innerHTML='<strong>'+esc(segment.dataset.country)+'</strong><br>'+fmt(segment.dataset.works)+' obras<br>'+fmt(segment.dataset.epubs)+' EPUBs';tooltip.style.display='block';const x=event.clientX??window.innerWidth/2,y=event.clientY??window.innerHeight/2;tooltip.style.left=Math.min(x+14,window.innerWidth-270)+'px';tooltip.style.top=Math.min(y+14,window.innerHeight-100)+'px'};
@@ -614,26 +933,22 @@ function renderOriginsDonut(){
 }
 renderOriginsDonut();
 const cherrymistCatalog=[
-  {title:'Binding Flower',url:'https://fullnovels.com/binding-flower/'},
-  {title:'Leveling Up in the Grand Duke’s Bed',url:'https://fullnovels.com/leveling-up-in-the-grand-dukes-bed/'},
-  {title:'Lumen Project',url:'https://fullnovels.com/lumen-project/'},
-  {title:'Reap What You Sow',url:'https://fullnovels.com/reap-what-you-sow/'}
+  {title:"Almost, But Not Quite",url:"https://www.novelupdates.com/series/almost-but-not-quite/",epubId:"74000",evidenceUrl:"https://cherrymist.cafe/story/almost-but-not-quite/"},
+  {title:"Binding Flower",url:"https://fullnovels.com/binding-flower/",epubId:"89102",evidenceUrl:"https://cherrymist.cafe/story/binding-flower/"},
+  {title:"Hell Execution Order",url:"https://fullnovels.com/hell-execution-order/",epubId:"89272",evidenceUrl:"https://cherrymist.cafe/chapter/heo-ch1/"},
+  {title:"Lumen Project",url:"https://fullnovels.com/lumen-project/",epubId:"80402",evidenceUrl:"https://cherrymist.cafe/story/lumen-project/"}
 ];
-function cherrymistTitleNorm(value){return String(value||'').toLocaleLowerCase('en').replace(/[’‘'`]/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
+const cherrymistRecordsById=new Map(DATA.records.map(record=>[String(record.id),record]));
 function renderCherrymistMatches(){
-  const matches=cherrymistCatalog.map(item=>{
-    const target=cherrymistTitleNorm(item.title);
-    const records=DATA.records.filter(record=>[record.obra_verificada,record.catalogo,record.titulo,String(record.nome||'').replace(/\.epub$/i,'')].some(value=>value&&cherrymistTitleNorm(value)===target));
-    return {...item,records};
-  }).filter(item=>item.records.length);
-  $('cherrymistSummary').textContent=matches.length+' obras encontradas nos '+fmt(DATA.records.length)+' EPUBs do inventário, entre 710 títulos distintos do catálogo Cherrymist (712 registros).';
+  const matches=cherrymistCatalog.map(item=>({...item,records:[cherrymistRecordsById.get(item.epubId)].filter(Boolean)})).filter(item=>item.records.length);
+  $('cherrymistSummary').textContent=matches.length+' EPUBs locais com referência direta ao site Cherry Mist no próprio arquivo. A listagem anexa não cobre todos os títulos do grupo.';
   $('cherrymistBody').innerHTML=matches.map(item=>{
     const inventoryTitles=[...new Set(item.records.map(record=>record.obra_verificada||record.catalogo||record.titulo||record.nome).filter(Boolean))];
     const authors=[...new Set(item.records.map(record=>record.autor_obra||record.autor).filter(Boolean))];
     const countries=[...new Set(item.records.map(record=>record.nacionalidade_obra||record.pais).filter(Boolean).map(countryName))];
     const files=item.records.map(record=>'<span class="cherrymist-file">'+esc(record.nome||'Arquivo sem nome')+' · ID '+esc(record.id||'—')+'</span>').join('');
-    return '<tr><td><a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+'</a></td><td>'+esc(inventoryTitles.join(' / ')||'—')+'</td><td>'+esc(authors.join(' / ')||'—')+'</td><td>'+esc(countries.join(' / ')||'—')+'</td><td>'+files+'</td></tr>';
-  }).join('')||'<tr><td colspan="5" class="muted">Nenhuma obra do catálogo foi encontrada no inventário.</td></tr>';
+    return '<tr><td><a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+'</a></td><td>'+esc(inventoryTitles.join(' / ')||'—')+'</td><td>'+esc(authors.join(' / ')||'—')+'</td><td>'+esc(countries.join(' / ')||'—')+'</td><td>'+files+'</td><td><a href="'+esc(item.evidenceUrl)+'" target="_blank" rel="noopener noreferrer">Ver referência</a></td></tr>';
+  }).join('')||'<tr><td colspan="6" class="muted">Nenhum EPUB local com referência direta ao site Cherry Mist.</td></tr>';
 }
 renderCherrymistMatches();
 function renderNovelSummary(){
@@ -665,7 +980,7 @@ function renderNovelSummary(){
 function moveNovelSummary(delta){novelSummaryPage+=delta;renderNovelSummary()}
 function setNovelPageSize(value){novelSummaryPageSize=Number(value)||10;novelSummaryPage=0;renderNovelSummary()}
 function novelGroupAuthors(group){return group.authors.length?group.authors:['Pendente']}
-function setNovelSidebarFacet(type){novelSidebarFacet=type==='author'?'author':'country';const isAuthor=novelSidebarFacet==='author';$('novel-facet-country').setAttribute('aria-pressed',String(!isAuthor));$('novel-facet-author').setAttribute('aria-pressed',String(isAuthor));$('novelFacetSearch').value='';$('novelFacetSearch').placeholder=isAuthor?'Buscar autor...':'Filtrar país...';$('novelFacetSearch').setAttribute('aria-label',isAuthor?'Buscar autor':'Filtrar país');renderNovelFacetFilters()}
+function setNovelSidebarFacet(type){novelSidebarFacet=type==='author'?'author':'country';const isAuthor=novelSidebarFacet==='author';$('novel-facet-country').setAttribute('aria-pressed',String(!isAuthor));$('novel-facet-author').setAttribute('aria-pressed',String(isAuthor));$('novelFacetSearch').value='';$('novelFacetSearch').placeholder=isAuthor?'Buscar autor...':'Filtrar origem...';$('novelFacetSearch').setAttribute('aria-label',isAuthor?'Buscar autor':'Filtrar origem');renderNovelFacetFilters()}
 function renderNovelFacetFilters(){
   const isAuthor=novelSidebarFacet==='author',query=$('novelFacetSearch').value.trim().toLocaleLowerCase('pt-BR'),counts=new Map();
   novelGroups.forEach(g=>{const values=isAuthor?novelGroupAuthors(g):[g.country];[...new Set(values)].forEach(value=>counts.set(value,(counts.get(value)||0)+1))});
@@ -695,7 +1010,7 @@ function toggleNovelSummaryRow(row){const detail=$(row.getAttribute('aria-contro
 function exportNovelSummaryCSV(){
   const query=$('novelSummarySearch').value.trim().toLocaleLowerCase('pt-BR');
   const groups=novelGroups.filter(g=>(!query||[g.title,...(g.alternateTitles||[]),...g.records.flatMap(r=>[r.obra_verificada,r.catalogo,r.titulo,r.nome])].filter(Boolean).some(value=>String(value).toLocaleLowerCase('pt-BR').includes(query)))&&(!selectedNovelCountries.size||selectedNovelCountries.has(g.country))&&(!selectedNovelAuthors.size||novelGroupAuthors(g).some(author=>selectedNovelAuthors.has(author)))&&(!selectedNovelAuthor||g.authors.includes(selectedNovelAuthor))&&(!selectedNovelProtagonist||g.protagonistList.includes(selectedNovelProtagonist))&&(novelQuantityFilter==='all'||(novelQuantityFilter==='one'?g.records.length===1:g.records.length>1)));
-  const cols=['Obra','Autor','Protagonistas','Nacionalidade','Quantidade de EPUBs','Arquivo EPUB','ID'];
+  const cols=['Obra','Autor','Protagonistas','Origem','Quantidade de EPUBs','Arquivo EPUB','ID'];
   const quote=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
   const lines=[cols.join(';'),...groups.flatMap(g=>g.records.map(r=>[g.title,g.author==='—'?'Pendente':g.author,g.protagonists==='—'?'Pendente':g.protagonists,g.country,g.records.length,r.nome||'',r.id||''].map(quote).join(';')))];
   const url=URL.createObjectURL(new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}));
@@ -746,19 +1061,19 @@ function duplicateDetailsMarkup(groups,record){
     });
   }));
   const rows=entries.map(entry=>'<tr><td>'+esc(entry.titulo)+'</td><td>'+
-    esc((entry.ids||[]).join(', ')||'—')+'</td><td>'+esc(entry.pais)+
+    esc((entry.ids||[]).join(', ')||'—')+'</td><td>'+esc(countryName(entry.pais))+
     '</td><td>'+esc(entry.identificado)+'</td><td>'+referenceLinks(entry.referencias)+
     '</td></tr>').join('');
   const groupsLabel=(groups||[]).length?((groups||[]).length+' grupo(s) de duplicatas relacionado(s)'):'Dados deste EPUB';
   return '<div class="detail-content"><p class="detail-heading">'+esc(groupsLabel)+
     '</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr>'+
-    '<th>Obra / registro relacionado</th><th>ID(s)</th><th>País de origem</th>'+
-    '<th>País identificado em</th><th>Referência</th></tr></thead><tbody>'+rows+
+    '<th>Obra / registro relacionado</th><th>ID(s)</th><th>Origem</th>'+
+    '<th>Fonte da origem</th><th>Referência</th></tr></thead><tbody>'+rows+
     '</tbody></table></div></div>';
 }
 function novelEpupsMarkup(g){
-  const rows=g.records.map(r=>{const sourceTitle=r.obra_verificada||r.catalogo||r.titulo||'';return '<tr><td>'+((sourceTitle&&groupNorm(sourceTitle)!==groupNorm(g.title))?'<strong>'+esc(sourceTitle)+'</strong><br>':'')+esc(r.nome||'—')+'</td><td>'+esc(r.id||'—')+'</td><td>'+esc(r.nacionalidade_obra||'Pendente')+'</td><td>'+esc(r.localizada_em||'Pendente')+'</td><td>'+referenceLinks(r.referencia_obra?[r.referencia_obra]:[] )+'</td></tr>'}).join('');
-  return '<div class="detail-content"><p class="detail-heading">'+fmt(g.records.length)+' EPUB(s) associados a esta novel</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Arquivo EPUB</th><th>ID</th><th>País de origem</th><th>País identificado em</th><th>Referência</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  const rows=g.records.map(r=>{const sourceTitle=r.obra_verificada||r.catalogo||r.titulo||'';return '<tr><td>'+((sourceTitle&&groupNorm(sourceTitle)!==groupNorm(g.title))?'<strong>'+esc(sourceTitle)+'</strong><br>':'')+esc(r.nome||'—')+'</td><td>'+esc(r.id||'—')+'</td><td>'+esc(countryName(r.nacionalidade_obra||'Pendente'))+'</td><td>'+esc(r.localizada_em||'Pendente')+'</td><td>'+referenceLinks(r.referencia_obra?[r.referencia_obra]:[] )+'</td></tr>'}).join('');
+  return '<div class="detail-content"><p class="detail-heading">'+fmt(g.records.length)+' EPUB(s) associados a esta novel</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Arquivo EPUB</th><th>ID</th><th>Origem</th><th>Fonte da origem</th><th>Referência</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function toggleExplorerDetails(button){
   const row=$(button.getAttribute('aria-controls'));
@@ -792,13 +1107,13 @@ function formatVerification(value){
   return String(value);
 }
 function exportCSV(){
-  const cols=['nome','titulo','autor','idioma','pais',
+  const cols=['nome','titulo','autor','idioma','pais','origem_exibida',
     'obra_verificada','autor_obra','nacionalidade_obra','protagonistas_obra',
     'verificadas','localizada_em','fonte_nacionalidade_obra','referencia_obra','catalogo','id','data'];
   const quote=v=>'"'+String(Array.isArray(v)?v.join(' / '):(v??'')).replace(/"/g,'""')+'"';
   const csv='\ufeff'+[
     cols.join(';'),
-    ...filtered.flatMap(g=>g.records).map(r=>cols.map(c=>quote(r[c])).join(';'))
+    ...filtered.flatMap(g=>g.records).map(r=>cols.map(c=>quote(c==='origem_exibida'?countryName(r.nacionalidade_obra||r.pais):r[c])).join(';'))
   ].join('\r\n');
   const url=URL.createObjectURL(
     new Blob([csv],{type:'text/csv;charset=utf-8'})
@@ -807,8 +1122,7 @@ function exportCSV(){
   a.href=url;a.download='epubs_filtrados.csv';a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-render();
-navigate(['overview','novels','explorer'].includes(location.hash.slice(1))?location.hash.slice(1):'overview');
+navigate(['overview','novels'].includes(location.hash.slice(1))?location.hash.slice(1):'overview');
 </script>
 </body></html>'''
 

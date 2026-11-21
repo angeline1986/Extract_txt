@@ -201,6 +201,34 @@ def apply_verified_title_corrections(record):
             'referencia_obra':'https://www.novelupdates.com/series/doll/',
             'localizada_em':'Novel Updates','verificadas':'17/11/2026',
         })
+    elif record_id=='22006':
+        record.update({
+            'catalogo':'The Imperial Uncle','autor':'Da Feng Gua Guo (大风刮过)',
+            'idioma':'chinese','pais':'CN','status_catalogo':'identificado',
+            'obra_verificada':'The Imperial Uncle ESP','obra_chave':'obra_00208',
+            'autor_obra':'Da Feng Gua Guo (大风刮过)','nacionalidade_obra':'China',
+            'protagonistas_obra':['Cheng Jun (承浚; Prince Huai)','Liu Tongyi (柳桐倚)'],
+            'fonte_nacionalidade_obra':'https://www.novelupdates.com/series/imperial-uncle/',
+            'referencia_obra':'https://www.novelupdates.com/series/imperial-uncle/',
+            'localizada_em':'Novel Updates','verificadas':'18/11/2026',
+        })
+    elif record_id in {'81635','80232'}:
+        record.update({
+            'catalogo':'[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught',
+            'autor':'Shi Yu (是玉)','idioma':'chinese','pais':'CN',
+            'status_catalogo':'identificado',
+            'evidencia_catalogo':'Título e autoria conferidos no Novel Updates e no índice chinês da obra.',
+            'obra_verificada':'[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught',
+            'obra_chave':'obra_01843' if record_id=='81635' else 'obra_01775',
+            'autor_obra':'Shi Yu (是玉)','nacionalidade_obra':'China',
+            'protagonistas_obra':['Shen Yu (沈玉)'],
+            'fonte_nacionalidade_obra':('https://www.dmxs.org/cycs/23159.html' if record_id=='80232'
+                else 'https://www.novelupdates.com/series/quick-transmigration-the-delicate-little-beauty-keeps-getting-caught/'),
+            'referencia_obra':('https://www.dmxs.org/cycs/23159.html' if record_id=='80232'
+                else 'https://www.novelupdates.com/series/quick-transmigration-the-delicate-little-beauty-keeps-getting-caught/'),
+            'localizada_em':'Dmxs.Org' if record_id=='80232' else 'Novel Updates',
+            'verificadas':'18/11/2026',
+        })
     return True
 
 def apply_verified_title_corrections_work(work):
@@ -514,9 +542,67 @@ _DAOMU_BIJI_MEMBERS = {
 
 _EXPLICIT_PRESENTATION_GROUPS = {
     "The Scum Villain's Self-Saving System": ('obra_00006','obra_00066','obra_00067'),
-    'Case File Compendium': ('obra_00019','obra_00020','obra_00191','obra_00206','obra_00290','obra_02537'),
+    'Case File Compendium': ('obra_00019','obra_00020','obra_00191','obra_00206','obra_00290','obra_00905','obra_01036','obra_01387','obra_01525','obra_02537','obra_02633','obra_02634','obra_02635'),
+    'I Became a God in a Horror Game': ('obra_00200','obra_00774','obra_00775','obra_00945','obra_01135','obra_01136','obra_01254','obra_02398','obra_02524','obra_02595','obra_02604','obra_03018','obra_03019'),
+    "The King's Avatar": ('obra_00605','obra_00606','obra_00607','obra_00608','obra_00609','obra_00610','obra_00611','obra_00612','obra_00613','obra_00617','obra_00618','obra_00619','obra_00620','obra_00621','obra_00622','obra_00623','obra_00624'),
+    'S.C.I Mystery Series': ('obra_00304','obra_00305','obra_00306','obra_00307','obra_00919','obra_02625'),
+    'After Rebirth, The Real Young Master Began to Maintain His Health': ('obra_00786','obra_02000'),
+    'The Wife Comes First (Qi Wei Shang)': ('obra_00199','obra_00923','obra_01886','obra_01912'),
+    'The Easter Egg Game (The Lucky Egg Game)': ('obra_00188','obra_00224','obra_00225','obra_00226','obra_02135','obra_02136'),
+    'Kaleidoscope of Death': ('obra_00308','obra_00309','obra_00632','obra_01396','obra_01824','obra_02253','obra_02556','obra_02557','obra_02558','obra_02898'),
+    'Golden Terrace': ('obra_00181','obra_00182','obra_00448','obra_00449','obra_00667'),
+    "There's Something Wrong with the Chief (Du Zhu You Bing)": ('obra_00302','obra_01069','obra_02312','obra_02835','obra_02842','obra_03003'),
+    'Hidden Love': ('obra_02021','obra_02094','obra_02581'),
+    'Descent from an Altitude of 10,000 Meters (The Approach)': ('obra_00355','obra_01054','obra_02568','obra_02723'),
+    'Art Thou Ailing? (Jun You Ji Fou)': ('obra_01234','obra_01524','obra_02256'),
+    'Golden Jade Dynasty': ('obra_01931','obra_01934','obra_01958'),
+    'Ashes (Yan Hui)': ('obra_01668','obra_02100'),
+    'At the World’s Mercy': ('obra_02088','obra_02257','obra_02697'),
+    'Dawning (After Dawn)': ('obra_00551','obra_00959'),
+    'Can Ci Pin (The Defective)': ('obra_00183','obra_00222','obra_00293','obra_01079'),
+    'Bottom A, Top O': ('obra_00813','obra_01049','obra_02379','obra_02385'),
+    'Fake Slackers': ('obra_00473','obra_00474','obra_00487','obra_00488','obra_02520'),
+    'FOG [e-sports]': ('obra_00002','obra_01333','obra_01800'),
+    "Chusan's Liuyi Children's Day": ('obra_01296','obra_01364','obra_01693','obra_02105','obra_02106','obra_02786','obra_02787'),
+    "Don't Pick Up Boyfriends From the Trash Bin": ('obra_02482','obra_02483','obra_02571','obra_02587','obra_02692'),
+    'The Villain’s White Halo': ('obra_01448','obra_01980','obra_02731'),
+    'The Plough': ('obra_00809','obra_02452'),
+    'Me to the Universe': ('obra_00311','obra_02690'),
+    'Peach Omen': ('obra_02358','obra_02422'),
+    'My Beloved Visits My Grave': ('obra_01111','obra_01121'),
+    'Blooming Romance': ('obra_01349','obra_02896'),
+    'Blade of the Galactic Empire': ('obra_01225','obra_01226'),
+    "The Transmigrated Li Jin's Daily Farming Life": ('obra_02602','obra_02689'),
+    'Blossoms of Power': ('obra_01629','obra_01874'),
+    'Love Beyond the Grave': ('obra_01336','obra_01341'),
+    'The Lament of Autumn': ('obra_02359','obra_02360'),
+    'An Apple': ('obra_01434','obra_01660'),
+    'Matrilocal Marriage (Ruzhui)': ('obra_00157','obra_02684'),
+    'Wu Chang Jie': ('obra_00034','obra_00874'),
+    "The Salted Fish's Political Marriage": ('obra_01090','obra_02063'),
+    'Malevolent Curse (Xiong Sui)': ('obra_01312','obra_01363'),
+    'Rose and Renaissance': ('obra_00943','obra_01165'),
+    'Silent Reading (Mo Du)': ('obra_00469','obra_02233'),
+    'Love Spell (Qing Gu)': ('obra_01960','obra_02182'),
+    'Paper Plane (Paper Airplane)': ('obra_01286','obra_01421'),
+    'Love Out of Sync': ('obra_01865','obra_01866'),
+    'Instinct Game': ('obra_01744','obra_01746'),
+    'The Love Never Sets': ('obra_01152','obra_01190'),
+    'Killer and Healer': ('obra_02548','obra_02606'),
+    'I Ship My Adversary X Me': ('obra_00654','obra_01470'),
+    'Death Progress Bar': ('obra_01914','obra_02908'),
+    "Don't Hide From Me": ('obra_02609','obra_02718'),
+    'How to Survive as a Villain': ('obra_01423','obra_01915','obra_02672','obra_02804'),
+    'The Marquis Is Innocent': ('obra_01072','obra_01690'),
+    'The Imperial Uncle': ('obra_00025','obra_00208','obra_00638'),
+    '[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught': ('obra_01775','obra_01843'),
+    'Let This F-Class Guide Live in Peace!': ('obra_02103','obra_02108'),
+    'The Rebirth of the General Who Always Sees Himself as a Replacement': ('obra_01325','obra_02785'),
+    'Jianghu Demolition Squad': ('obra_02400','obra_02708'),
+    'Till Death Do Us Part': ('obra_00280','obra_02438'),
+    'My Husband and I Sleep in a Coffin': ('obra_02414','obra_02528'),
     'First-Class Lawyer': ('obra_00129','obra_00153'),
-    'To Rule in a Turbulent World': ('obra_00021','obra_00044','obra_00944','obra_01186','obra_02621'),
+    'To Rule in a Turbulent World (乱世为王)': ('obra_00021','obra_00044','obra_00944','obra_01186','obra_01705','obra_02621'),
     'No Moral': ('obra_00004','obra_00005','obra_00041'),
     'Tianbao Fuyao Lu': ('obra_00043','obra_00065'),
     'Love Sea': ('obra_00068','obra_00069','obra_00070','obra_00071','obra_00072','obra_00073'),
@@ -528,14 +614,24 @@ _EXPLICIT_PRESENTATION_GROUPS = {
     'The Case Files of Jeweler Richard': ('obra_00132','obra_00133','obra_02495','obra_02736'),
     'I Can Do It': ('obra_00173','obra_00174','obra_02024'),
     'The Perfect Destiny': ('obra_00078','obra_00159'),
-    'KinnPorsche': ('obra_00079','obra_00080'),
-    "The Legendary Master's Wife": ('obra_00083','obra_00084','obra_00085','obra_00086','obra_00087'),
+    'KinnPorsche': ('obra_00080',),
+    'VegasPete (KinnPorsche Side Story)': ('obra_00079',),
+    'Even Better': ('obra_01947',),
+    'Look at Me': ('obra_01113','obra_01114','obra_01117'),
+    'Why Do All My Roommates Look at Me Like This?': ('obra_02841',),
+    'Heartbound': ('obra_01926','obra_01968'),
+    'Crazy Love Moo Moo': ('obra_01567',),
+    'NITI man, society and lover': ('obra_01061','obra_01255'),
+    'Cutie Pie': ('obra_01055','obra_01058'),
+    'Space: The Gap Between Us': ('obra_00997',),
+    'My Only 12%': ('obra_00093',),
+    "The Legendary Master's Wife": ('obra_00083','obra_00084','obra_00085','obra_00086','obra_00087','obra_00350','obra_02481','obra_02504','obra_02505','obra_02506','obra_02507','obra_02508','obra_02509'),
     "The Beauty's Blade": ('obra_00937','obra_01680'),
     'Guardian: Zhen Hun': ('obra_00081','obra_00210','obra_00625','obra_00894'),
     'Copper Coins: Tong Qian Kan Shi': ('obra_00964','obra_02016'),
-    'Little Mushroom': ('obra_00127','obra_00128','obra_01979'),
+    'Little Mushroom': ('obra_00127','obra_00128','obra_00211','obra_00212','obra_01507','obra_01979','obra_01996'),
     'Semantic Error': ('obra_01320','obra_02574'),
-    'Thousand Autumns: Qian Qiu': ('obra_01689','obra_00030','obra_00205'),
+    'Thousand Autumns': ('obra_00030','obra_00205','obra_00823','obra_01689'),
     'Circle of Inevitability': ('obra_01359','obra_02522'),
     'Error: Metamorphosis': ('obra_02470','obra_02749','obra_02772'),
     'Even If Everyone Hates You': ('obra_02259','obra_02823'),
@@ -547,20 +643,19 @@ _EXPLICIT_PRESENTATION_GROUPS = {
     'The Trashy PD Has To Survive as an Idol': ('obra_02975','obra_02976'),
     'This Venerable One Really Didn’t Abandon My Familiar': ('obra_02719','obra_02721'),
     'Tsuki ga Michibiku Isekai Douchuu': ('obra_02753','obra_02754','obra_02755','obra_02756','obra_02757','obra_02758','obra_02759','obra_02760','obra_02761','obra_02762','obra_02763','obra_02764','obra_02765','obra_02766','obra_02767','obra_02768','obra_02769','obra_02770','obra_02771'),
-    'There’s Something Wrong with the Chief: Du Zhu You Bing': ('obra_02842','obra_01069'),
     'Waiting For You Online': ('obra_00703','obra_02726'),
     'When Two Alphas Meet, One’s an Omega': ('obra_01443','obra_02920','obra_02814'),
     'Turning': ('obra_02102','obra_00547','obra_01491','obra_01695','obra_00438','obra_00953'),
     "The Hunter's Gonna Lay Low": ('obra_00123','obra_01352','obra_02382','obra_02679','obra_02779','obra_00267'),
-    'The Husky and His White Cat Shizun': ('obra_00645','obra_00777','obra_00776','obra_01066','obra_02477'),
+    'The Husky and His White Cat Shizun': ('obra_00018','obra_00357','obra_00418','obra_00644','obra_00645','obra_00672','obra_00776','obra_00777','obra_00828','obra_01063','obra_01066','obra_01334','obra_01347','obra_01348','obra_01661','obra_02477'),
     'The Return of Cambrian Period': ('obra_00358','obra_02593'),
     'The S-Classes That I Raised': ('obra_00472','obra_00001','obra_02572'),
     'The Sickly Beauty Substitute Called It Quits': ('obra_02513','obra_02514','obra_02515'),
     'The Song of Achilles': ('obra_00493','obra_00558'),
-    "The White Cat's Divine Scratching Post": ('obra_02829','obra_01581','obra_02315'),
+    "The White Cat's Divine Scratching Post": ('obra_01581','obra_02315','obra_02829','obra_03006'),
     'Thriller Trainee': ('obra_00197','obra_02583'),
     'Tryst Six Venom': ('obra_00630','obra_00634'),
-    'Welcome to the Nightmare Live': ('obra_01411','obra_02808'),
+    'Welcome to the Nightmare Live': ('obra_01271','obra_01411','obra_02580','obra_02808'),
     'Tharntype': ('obra_00056','obra_00057'),
     "The Other World's Books Depend on the Bean Counter": ('obra_00012','obra_00013'),
     'Alabaster Penitentiary': ('obra_00096','obra_00097','obra_00098','obra_00099'),
@@ -578,11 +673,11 @@ _EXPLICIT_PRESENTATION_GROUPS = {
     'Artemis Fowl: The Opal Deception': ('obra_00726',),
     'Artemis Fowl: The Lost Colony': ('obra_00725',),
     '太子千秋万载': ('obra_01722',),
-    '蝙蝠 (Bat)': ('obra_00705',),
+    'Bat (蝙蝠)': ('obra_00705','obra_01559','obra_01560'),
     'Desire (垂涎)': ('obra_00842','obra_00898','obra_02641'),
     'Triage': ('obra_00513',),
     'Dear Benjamin': ('obra_00381','obra_00810','obra_00811'),
-    'A Letter from Keanu Reeves': ('obra_01059','obra_02343','obra_02651','obra_02912','obra_02640'),
+    'A Letter from Keanu Reeves': ('obra_00817','obra_01059','obra_02343','obra_02432','obra_02640','obra_02651','obra_02912'),
     'A Round Trip to Love': ('obra_01670','obra_01672','obra_01673'),
     'After Becoming a Cannon Fodder, I Bent the Villainous CEO': ('obra_02372','obra_03010'),
     'After I Turned From O to A I Became the National Male God': ('obra_00325',),
@@ -1151,7 +1246,7 @@ def inject_html(original, payload, root):
         for row in payload.get('obras',[])
     )
     apply_author_aliases_to_payload(display_payload,author_aliases)
-    nav='''<button class="nav" id="nav-works" onclick="ceNavigate('works')" title="Obras"><span class="navicon">▤</span><span class="navlabel">Obras</span></button>'''
+    nav=''
     if '</nav>' not in original or 'id="primaryTabs"' not in original or '</main>' not in original or '</body>' not in original:raise ValueError('Estrutura HTML inesperada; não alterada')
     original=original.replace('</nav>','<!-- CHECK_EPUB_NAV_START -->\n'+nav+'\n<!-- CHECK_EPUB_NAV_END -->\n</nav>',1)
     sections='''<!-- CHECK_EPUB_SECTIONS_START -->
@@ -1183,10 +1278,10 @@ def inject_html(original, payload, root):
     js='''<script>
 const CE_DATA=__CE_PAYLOAD__;
 const ceEsc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function ceCatalogPendingGroups(){const localIds=new Set();function collectIds(work){(work.ids||[]).forEach(id=>localIds.add(String(id)));(work.arquivos||[]).forEach(file=>{const match=String(file).match(/^(\d{1,9})[_\s-]/);if(match)localIds.add(match[1]);});(work.itens_serie||[]).forEach(collectIds)}CE_DATA.obras.forEach(collectIds);const pendingCountries=new Set(['Pendente','Não identificada','Conflito']);return novelGroups.filter(group=>pendingCountries.has(group.country)&&!group.records.some(record=>{const match=String(record.nome||'').match(/^(\d{1,9})[_\s-]/);return localIds.has(String(record.id||match?.[1]||''));})).map((group,index)=>{const author=group.authors.join(' / '),protagonists=group.protagonistList||[],observations=group.records.map(record=>[record.nacionalidade_obra,record.observacao_obra,record.criterio_nacionalidade].filter(Boolean).join(' ')).filter(Boolean).join(' | ');const children=group.records.map(record=>{const match=String(record.nome||'').match(/^(\d{1,9})[_\s-]/),id=String(record.id||match?.[1]||'');return {chave:'catalog:'+group.key+':'+id,titulo:group.title,ids:id?[id]:[],arquivos:record.nome?[record.nome]:[],autores:group.authors,quantidade:1,verificacao_obra:{autor:author,nacionalidade_obra:group.country,protagonistas:protagonists,observacao:record.nacionalidade_obra||'',fonte_nacionalidade:record.fonte_nacionalidade_obra||'',referencias:record.referencia_obra?[record.referencia_obra]:[]}}});return {chave:'catalog_pending:'+index+':'+group.key,titulo:group.title,titulos_alternativos:[],autores:group.authors,arquivos:group.records.map(record=>record.nome).filter(Boolean),ids:group.records.map(record=>String(record.id||'')).filter(Boolean),quantidade:group.records.length,itens_serie:children,nacionalidade_confirmada:false,nacionalidade_obra:group.country,protagonistas_obra:protagonists,catalog_evidence:observations,verificadas_exibicao:group.verified||'Pendente'};});}
+function ceCatalogPendingGroups(){const localIds=new Set();function collectIds(work){(work.ids||[]).forEach(id=>localIds.add(String(id)));(work.arquivos||[]).forEach(file=>{const match=String(file).match(/^(\d{1,9})[_\s-]/);if(match)localIds.add(match[1]);});(work.itens_serie||[]).forEach(collectIds)}CE_DATA.obras.forEach(collectIds);const pendingCountries=new Set(['Pendente','Não identificada','Conflito','Internacional (OEL — inglês)','Fanfic (inglês)']);return novelGroups.filter(group=>pendingCountries.has(group.country)&&!group.records.some(record=>{const match=String(record.nome||'').match(/^(\d{1,9})[_\s-]/);return localIds.has(String(record.id||match?.[1]||''));})).map((group,index)=>{const author=group.authors.join(' / '),protagonists=group.protagonistList||[],observations=group.records.map(record=>[record.nacionalidade_obra,record.observacao_obra,record.criterio_nacionalidade].filter(Boolean).join(' ')).filter(Boolean).join(' | ');const children=group.records.map(record=>{const match=String(record.nome||'').match(/^(\d{1,9})[_\s-]/),id=String(record.id||match?.[1]||'');return {chave:'catalog:'+group.key+':'+id,titulo:group.title,ids:id?[id]:[],arquivos:record.nome?[record.nome]:[],autores:group.authors,quantidade:1,verificacao_obra:{autor:author,nacionalidade_obra:group.country,protagonistas:protagonists,observacao:record.nacionalidade_obra||'',fonte_nacionalidade:record.fonte_nacionalidade_obra||'',referencias:record.referencia_obra?[record.referencia_obra]:[]}}});return {chave:'catalog_pending:'+index+':'+group.key,titulo:group.title,titulos_alternativos:[],autores:group.authors,arquivos:group.records.map(record=>record.nome).filter(Boolean),ids:group.records.map(record=>String(record.id||'')).filter(Boolean),quantidade:group.records.length,itens_serie:children,nacionalidade_confirmada:false,nacionalidade_obra:group.country,protagonistas_obra:protagonists,catalog_evidence:observations,verificadas_exibicao:group.verified||'Pendente'};});}
 const CE_CATALOG_PENDING=ceCatalogPendingGroups();
 function ceVerifiedLabel(value){const m=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})(?:[T ](\\d{2}):(\\d{2}):(\\d{2}))?/);return m?m[3]+'/'+m[2]+'/'+m[1]+(m[4]?' '+m[4]+':'+m[5]+':'+m[6]:''):(value||'Pendente');}
-const ceViews=['overview','novels','explorer','works','pending','problems','duplicates'];
+const ceViews=['overview','novels'];
 function ceNavigate(v){if(!ceViews.includes(v))v='overview';const section=v==='novels'?'overview':v;for(const n of ['overview','explorer','works','pending','problems','duplicates'])document.getElementById(n)?.classList.toggle('hidden',n!==section);document.getElementById('overviewPanel')?.classList.toggle('hidden',v!=='overview');document.getElementById('novelsPanel')?.classList.toggle('hidden',v!=='novels');ceViews.forEach(n=>document.getElementById('nav-'+n)?.classList.toggle('active',n===v));location.hash=v;}
 const ceOriginalNavigate=navigate;
 navigate=ceNavigate;
@@ -1210,13 +1305,13 @@ function ceDuplicateGroupsFor(work){const keys=new Set();function collect(item){
 function ceSourceLabel(value){if(!value)return '';try{const host=new URL(value).hostname.replace(/^www\\./,'');const names={'novelupdates.com':'Novel Updates','jjwxc.net':'JJWXC','ridibooks.com':'RIDI Books','sevenseasentertainment.com':'Seven Seas','yenpress.com':'Yen Press','goodreads.com':'Goodreads','books.google.com':'Google Books','google.com':'Google Books','mebmarket.com':'MEB Market','fanqienovel.com':'Fanqie Novel','webnovel.com':'Webnovel','wattpad.com':'Wattpad','tunwalai.com':'Tunwalai','wtr-lab.com':'WTR-Lab','marinetl.xyz':'MarineTL'};return names[host]||host;}catch{return value;}}
 function ceWorkLeaves(work){const children=work.itens_serie||[];return children.length?children.flatMap(ceWorkLeaves):[work];}
 function ceExpandedReferenceLinks(urls){return (urls||[]).length?urls.map((url,index)=>'<a href="'+ceEsc(url)+'" target="_blank" rel="noopener noreferrer">'+((urls.length>1)?'Abrir '+(index+1):'Abrir')+'</a>').join(' · '):'—';}
-function ceWorkDetailsMarkup(work,groups){const entries=ceWorkLeaves(work).map(item=>{const v=item.verificacao_obra||{};const ids=item.ids?.length?item.ids:(item.arquivos||[]).map(file=>String(file).match(/^(\d{1,9})[_\s-]/)?.[1]).filter(Boolean);const source=ceSourceLabel(v.fonte_nacionalidade);return {title:item.titulo||work.titulo,files:item.arquivos||[],key:item.chave||'—',ids:ids.join(', ')||'—',country:v.nacionalidade_obra||'Pendente',found:source||(v.nacionalidade_obra?'Fonte não registrada':'Pendente'),refs:v.referencias||[]};});const ownKeys=new Set(entries.map(item=>String(item.key)));(groups||[]).forEach(group=>(group.membros||[]).forEach(member=>{if(!ownKeys.has(String(member.chave)))entries.push({title:member.titulo||'Obra sem título',files:member.arquivos||[],key:member.chave||'—',ids:(member.ids||[]).join(', ')||'—',country:member.pais||'Pendente',found:member.pais_identificado_em||'Pendente',refs:member.referencias||[]});}));const rows=entries.map(item=>'<tr><td>'+ceEsc(item.title)+'</td><td>'+ceEsc(item.files.join(', ')||'—')+'</td><td>'+ceEsc(item.key)+'</td><td>'+ceEsc(item.ids)+'</td><td>'+ceEsc(item.country)+'</td><td>'+ceEsc(item.found)+'</td><td>'+ceExpandedReferenceLinks(item.refs)+'</td></tr>').join('');const heading=(groups||[]).length?((groups||[]).length+' grupo(s) de duplicatas relacionado(s)'):'Dados da obra';return '<div class="ce-expanded"><p class="ce-expanded-heading">'+ceEsc(heading)+'</p><div class="ce-expanded-wrap"><table class="ce-expanded-table"><thead><tr><th>Obra / registro relacionado</th><th>Arquivo EPUB</th><th>Chave</th><th>ID(s)</th><th>País de origem</th><th>País identificado em</th><th>Referência</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';}
+function ceWorkDetailsMarkup(work,groups){const entries=ceWorkLeaves(work).map(item=>{const v=item.verificacao_obra||{};const ids=item.ids?.length?item.ids:(item.arquivos||[]).map(file=>String(file).match(/^(\d{1,9})[_\s-]/)?.[1]).filter(Boolean);const source=ceSourceLabel(v.fonte_nacionalidade);return {title:item.titulo||work.titulo,files:item.arquivos||[],key:item.chave||'—',ids:ids.join(', ')||'—',country:v.nacionalidade_obra||'Pendente',found:source||(v.nacionalidade_obra?'Fonte não registrada':'Pendente'),refs:v.referencias||[]};});const ownKeys=new Set(entries.map(item=>String(item.key)));(groups||[]).forEach(group=>(group.membros||[]).forEach(member=>{if(!ownKeys.has(String(member.chave)))entries.push({title:member.titulo||'Obra sem título',files:member.arquivos||[],key:member.chave||'—',ids:(member.ids||[]).join(', ')||'—',country:member.pais||'Pendente',found:member.pais_identificado_em||'Pendente',refs:member.referencias||[]});}));const rows=entries.map(item=>'<tr><td>'+ceEsc(item.title)+'</td><td>'+ceEsc(item.files.join(', ')||'—')+'</td><td>'+ceEsc(item.key)+'</td><td>'+ceEsc(item.ids)+'</td><td>'+ceEsc(countryName(item.country))+'</td><td>'+ceEsc(item.found)+'</td><td>'+ceExpandedReferenceLinks(item.refs)+'</td></tr>').join('');const heading=(groups||[]).length?((groups||[]).length+' grupo(s) de duplicatas relacionado(s)'):'Dados da obra';return '<div class="ce-expanded"><p class="ce-expanded-heading">'+ceEsc(heading)+'</p><div class="ce-expanded-wrap"><table class="ce-expanded-table"><thead><tr><th>Obra / registro relacionado</th><th>Arquivo EPUB</th><th>Chave</th><th>ID(s)</th><th>Origem</th><th>Fonte da origem</th><th>Referência</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';}
 function ceToggleWorkDetails(button){const row=document.getElementById(button.getAttribute('aria-controls'));const expanded=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!expanded));row.hidden=expanded;}
 function ceTable(items,obrasMode=false,scope='table'){if(!items.length)return '<p class="muted">Nenhum registro disponível nesta categoria.</p>';
 const detailsHeader=obrasMode?'':'<th>Detalhes</th>';
-const reviewHeaders=obrasMode?'<th>País de origem</th><th>Protagonistas</th>':'';
+const reviewHeaders=obrasMode?'<th>Origem</th><th>Protagonistas</th>':'';
 const columns=obrasMode?6:4;
-const body=items.map((g,index)=>{let v=g.verificacao_obra||{};let author=obrasMode&&v.autor?v.autor:(g.autores.join(', ')||'Não informado');if(!obrasMode)return '<tr><td><strong>'+ceEsc(g.titulo)+'</strong></td><td>'+ceEsc(author)+'</td><td>'+g.quantidade+'</td><td><details><summary style="cursor:pointer;color:#3457a5">Ver arquivos associados</summary><div style="padding:10px 0;max-width:550px">'+ceDetails(g)+'</div></details></td></tr>';const detailId=scope+'-details-'+index;return '<tr class="ce-data-row"><td><div class="ce-title-cell"><button type="button" class="ce-row-expander" aria-label="Expandir dados e possíveis duplicatas" title="Expandir dados e possíveis duplicatas" aria-expanded="false" aria-controls="'+detailId+'" onclick="ceToggleWorkDetails(this)"><span class="ce-chevron" aria-hidden="true">›</span></button><strong class="ce-title-text">'+ceEsc(g.titulo)+'</strong></div></td><td>'+ceEsc(author)+'</td><td>'+ceEsc(v.nacionalidade_obra||g.nacionalidade_obra||'Pendente')+'</td><td>'+ceEsc((v.protagonistas||g.protagonistas_obra||[]).join(' / ')||'Pendente')+'</td><td>'+ceEsc(g.verificadas_exibicao||ceVerifiedLabel(v.verificado_em))+'</td><td>'+g.quantidade+'</td></tr><tr id="'+detailId+'" class="ce-detail-row" hidden><td colspan="'+columns+'">'+ceWorkDetailsMarkup(g,ceDuplicateGroupsFor(g))+'</td></tr>';}).join('');
+const body=items.map((g,index)=>{let v=g.verificacao_obra||{};let author=obrasMode&&v.autor?v.autor:(g.autores.join(', ')||'Não informado');if(!obrasMode)return '<tr><td><strong>'+ceEsc(g.titulo)+'</strong></td><td>'+ceEsc(author)+'</td><td>'+g.quantidade+'</td><td><details><summary style="cursor:pointer;color:#3457a5">Ver arquivos associados</summary><div style="padding:10px 0;max-width:550px">'+ceDetails(g)+'</div></details></td></tr>';const detailId=scope+'-details-'+index;return '<tr class="ce-data-row"><td><div class="ce-title-cell"><button type="button" class="ce-row-expander" aria-label="Expandir dados e possíveis duplicatas" title="Expandir dados e possíveis duplicatas" aria-expanded="false" aria-controls="'+detailId+'" onclick="ceToggleWorkDetails(this)"><span class="ce-chevron" aria-hidden="true">›</span></button><strong class="ce-title-text">'+ceEsc(g.titulo)+'</strong></div></td><td>'+ceEsc(author)+'</td><td>'+ceEsc(countryName(v.nacionalidade_obra||g.nacionalidade_obra||'Pendente'))+'</td><td>'+ceEsc((v.protagonistas||g.protagonistas_obra||[]).join(' / ')||'Pendente')+'</td><td>'+ceEsc(g.verificadas_exibicao||ceVerifiedLabel(v.verificado_em))+'</td><td>'+g.quantidade+'</td></tr><tr id="'+detailId+'" class="ce-detail-row" hidden><td colspan="'+columns+'">'+ceWorkDetailsMarkup(g,ceDuplicateGroupsFor(g))+'</td></tr>';}).join('');
 return '<div class="tablewrap"><table class="ce-main-table"><thead><tr><th>Obra</th><th>Autor</th>'+reviewHeaders+(obrasMode?'<th>Verificadas</th>':'')+'<th>Arquivos</th>'+detailsHeader+'</tr></thead><tbody>'+body+'</tbody></table></div>';
 }
 function ceVerificationTime(work){const value=work.verificacao_obra?.verificado_em||work.verificadas_exibicao||'';const timestamp=Date.parse(value);return Number.isFinite(timestamp)?timestamp:0;}
@@ -1235,7 +1330,7 @@ function ceSeriesFamily(work){if(ceIsFanfic(work))return '';const titles=[work.t
   ['The Summer Hikaru Died',/summer hikaru died/],['You’ve Got Mail',/you.ve got mail|perils of pigeon post/],['Your Forma',/your forma|electronic investigator echika/],
   ['The Disabled Tyrant’s Beloved Pet Fish',/disabled tyrant.s beloved pet fish|canji baojun de zhangxin yu/],['Secrets of the Silent Witch',/secrets of the silent witch/],
   ['Lord of Mysteries',/lord of (?:the )?mysteries/],['Eiderdown',/\beiderdown\b/],['Golden Terrace',/golden terrace/],['Hell Is Dark with No Flowers',/hell is dark with no flowers/],
-  ['Hidden Love',/\\bhidden love\\b/],['Interminable',/\\binterminable\\b/],['Look at Me',/look at me/],['Love Between Fairy and Devil',/love between fairy and devil/],
+  ['Hidden Love',/\\bhidden love\\b/],['Interminable',/\\binterminable\\b/],['Look at Me',/^look at me(?: |$)/],['Love Between Fairy and Devil',/love between fairy and devil/],
   ['Omniscient Reader’s Viewpoint',/omniscient readers? viewpoint/],['Panguan: The Twelfth Gate',/panguan|twelfth gate/],['The Only Sunflower I See Is You',/only sunflower i see is you/],
   ['The Villain’s White Halo',/villain.s white halo/],['At the World’s Mercy',/at the world.s mercy/],['Deadman Switch',/deadman switch/],
   ['Go For It, Nakamura!',/go for it(?: again)? nakamura/],['Earthian',/\\bearthian\\b/],['Megumi & Tsugumi',/megumi.*tsugumi/],['School Trip: Joined a Group I’m Not Close To',/school trip joined a group/],
@@ -1245,7 +1340,7 @@ function ceSeriesFamily(work){if(ceIsFanfic(work))return '';const titles=[work.t
 function ceGroupSeriesRows(items){const grouped=new Map();for(const item of items){const family=ceSeriesFamily(item);if(!family)continue;if(!grouped.has(family))grouped.set(family,[]);grouped.get(family).push(item)}const consumed=new Set(),result=[];for(const [family,members] of grouped){if(members.length<2)continue;members.forEach(item=>consumed.add(item));const children=members.flatMap(item=>item.itens_serie?.length?item.itens_serie:[item]);const unique=(values)=>[...new Set(values.filter(Boolean))];const authors=unique(members.flatMap(item=>[...(item.autores||[]),item.verificacao_obra?.autor||'']));const files=unique(members.flatMap(item=>item.arquivos||[]));const ids=unique(members.flatMap(item=>item.ids||[]));const countries=unique(members.map(item=>item.verificacao_obra?.nacionalidade_obra||item.nacionalidade_obra).filter(value=>value&&value!=='Pendente'&&!String(value).startsWith('Não identificada')));const protagonists=unique(members.flatMap(item=>item.verificacao_obra?.protagonistas||item.protagonistas_obra||[]));const parent={...members[0],chave:'serie:'+family,titulo:family,autores:authors,arquivos:files,ids,quantidade:members.reduce((n,item)=>n+Number(item.quantidade||item.arquivos?.length||item.ids?.length||1),0),titulos_alternativos:unique(members.flatMap(item=>[item.titulo,...(item.titulos_alternativos||[])]).filter(title=>title&&title!==family)),itens_serie:children,protagonistas_obra:protagonists,nacionalidade_obra:countries.length===1?countries[0]:'Pendente',nacionalidade_confirmada:false};delete parent.verificacao_obra;result.push(parent)}return [...items.filter(item=>!consumed.has(item)),...result].sort((a,b)=>ceVerificationTime(b)-ceVerificationTime(a)||a.titulo.localeCompare(b.titulo,'pt-BR',{sensitivity:'base'}));}
 function ceRender(){let q=(document.getElementById('ce-search')?.value||'').trim().toLowerCase();let matching=[...CE_DATA.obras,...CE_CATALOG_PENDING].filter(g=>!g.nacionalidade_confirmada&&[g.titulo,...g.titulos_alternativos,...g.autores,...g.arquivos,...(g.verificacao_obra?.protagonistas||[]),g.verificacao_obra?.autor||'',g.verificacao_obra?.nacionalidade_obra||'',JSON.stringify(g.itens_serie||[])].join(' ').toLowerCase().includes(q)).sort((a,b)=>ceVerificationTime(b)-ceVerificationTime(a)||a.titulo.localeCompare(b.titulo,'pt-BR',{sensitivity:'base'}));let fanfics=matching.filter(ceIsFanfic),ordinary=matching.filter(g=>!ceIsFanfic(g));ceFanficCount=fanfics.length;let counts=new Map();ordinary.forEach(g=>{let author=ceAuthorFind(ceWorkAuthorAliases(g)[0]);counts.set(author,(counts.get(author)||0)+1)});ceAuthorCounts=[...counts].map(([key,count])=>[key,{...ceAuthorIndex.get(key),count}]).sort((a,b)=>a[1].label.localeCompare(b[1].label,'pt-BR',{sensitivity:'base'}));if(ceSelectedAuthor!=='__fanfic__'&&ceSelectedAuthor&&!counts.has(ceSelectedAuthor))ceSelectedAuthor='';if(ceSelectedAuthor==='__fanfic__'&&!ceFanficCount)ceSelectedAuthor='';let selectedInfo=ceAuthorIndex.get(ceSelectedAuthor);let label=ceSelectedAuthor==='__fanfic__'?'Fanfic ('+ceFanficCount+')':selectedInfo?selectedInfo.label+' ('+counts.get(ceSelectedAuthor)+')':'Todos os autores ('+ordinary.length+')';document.getElementById('ce-author-label').textContent=label;if(!document.getElementById('ce-author-menu').hidden)ceRenderAuthorOptions();let works=ceSelectedAuthor==='__fanfic__'?fanfics:ordinary.filter(g=>!ceSelectedAuthor||ceAuthorFind(ceWorkAuthorAliases(g)[0])===ceSelectedAuthor);
 works=ceGroupSeriesRows(works);let pages=Math.max(1,Math.ceil(works.length/cePageSize));cePage=Math.min(cePage,pages-1);let shown=works.slice(cePage*cePageSize,(cePage+1)*cePageSize);
-document.getElementById('ce-works').innerHTML='<p class="muted">'+works.length+' obras exibidas · '+CE_CATALOG_PENDING.length+' grupos pendentes do catálogo sem correspondência na varredura local · '+CE_DATA.obras_transferidas+' transferidas ao Explorador por nacionalidade confirmada · '+CE_DATA.obras_revisadas_pendentes+' revisadas aguardando confirmação · '+CE_DATA.total_arquivos+' EPUBs válidos.</p>'+ceTable(shown,true,'works')+'<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px"><button type="button" onclick="ceMove(-1)" '+(cePage===0?'disabled':'')+'>Anterior</button><span class="muted">Página '+(cePage+1)+' de '+pages+'</span><button type="button" onclick="ceMove(1)" '+(cePage>=pages-1?'disabled':'')+'>Próximo</button></div>';
+document.getElementById('ce-works').innerHTML='<p class="muted">'+works.length+' obras exibidas · '+CE_CATALOG_PENDING.length+' grupos pendentes do catálogo sem correspondência na varredura local · '+CE_DATA.obras_transferidas+' transferidas ao Explorador por país de origem confirmado · '+CE_DATA.obras_revisadas_pendentes+' revisadas aguardando confirmação · '+CE_DATA.total_arquivos+' EPUBs válidos.</p>'+ceTable(shown,true,'works')+'<div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px"><button type="button" onclick="ceMove(-1)" '+(cePage===0?'disabled':'')+'>Anterior</button><span class="muted">Página '+(cePage+1)+' de '+pages+'</span><button type="button" onclick="ceMove(1)" '+(cePage>=pages-1?'disabled':'')+'>Próximo</button></div>';
 document.getElementById('ce-pending').innerHTML='<p class="muted">'+CE_DATA.pendentes.length+' agrupamentos pendentes. Identificação baseada apenas em evidências locais.</p>'+ceTable(CE_DATA.pendentes);
 document.getElementById('ce-problems').innerHTML='<p class="muted">'+CE_DATA.problemas.length+' falhas sem alternativa comprovadas. '+CE_DATA.problemas_indeterminados+' casos não classificáveis por falta de histórico completo de tentativas.</p>'+ceTable(CE_DATA.problemas);
 document.getElementById('ce-duplicates').innerHTML='<p class="muted">'+CE_DATA.duplicatas.length+' grupos com mais de um arquivo; '+CE_DATA.duplicatas_identificadas_catalogo.length+' grupos de título+autor repetidos entre os identificados no catálogo.</p>'+ceTable(CE_DATA.duplicatas);}
@@ -1331,8 +1426,10 @@ def main():
         if not known:pending.append(obj)
         # No proof of exhausted remedies or lack of alternate copies from partial ZIP / downloads.
         if errors:uncertain+=1
+    local_catalog_ids={str(row.get('id_mensagem','')) for row in scanned if row.get('id_mensagem')}
     identified=defaultdict(list)
     for row in catalog:
+        if str(row.get('id_mensagem','')) not in local_catalog_ids:continue
         if 'exata' not in norm(row.get('status_verificacao','')):continue
         t=norm(row.get('titulo_catalogo',''));a=norm(row.get('autor_catalogo',''))
         if t and a:identified[(t,a)].append({'id':row.get('id_mensagem',''),'arquivo':row.get('nome_arquivo','')})

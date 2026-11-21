@@ -6611,8 +6611,8 @@
     },
     {
       "chave": "obra_00044",
-      "titulo": "556ab60d6ba443cdfd67a1026bd53d31",
-      "titulos_alternativos": [],
+      "titulo": "To Rule in a Turbulent World (乱世为王)",
+      "titulos_alternativos": ["LSWW", "Luanshi Wei Wang"],
       "autores": [
         "GISELLE MAE SIBUG"
       ],
@@ -10438,10 +10438,12 @@
     },
     {
       "chave": "obra_00079",
-      "titulo": "1393b2b0b2e3c0c9558ae1a3715116bb",
-      "titulos_alternativos": [],
+      "titulo": "VegasPete (KinnPorsche Side Story)",
+      "titulos_alternativos": [
+        "VegasPete"
+      ],
       "autores": [
-        "irum.awesome@gmail.com"
+        "Não identificado"
       ],
       "arquivos": [
         "14557_VegasPete.epub",
@@ -10472,29 +10474,21 @@
       "verificacao_obra": {
         "metodo": "Leitura dos EPUBs associados e conferência bibliográfica da obra original",
         "verificado_em": "2026-11-16",
-        "autor": "DAEMI (romance principal); Sprite Hoang (especiais derivados indicados no EPUB); autoria de VegasPete não identificada",
+        "autor": "Não identificado",
         "nacionalidade_obra": "Tailândia",
         "protagonistas": [
-          "Kinn",
-          "Porsche"
+          "Vegas",
+          "Pete"
         ],
         "referencias": [
-          "https://sevenseasentertainment.com/books/kinnporsche-novel-vol-1/",
-          "https://www.mebmarket.com/?action=book_details&book_id=188844"
+          "https://www.wattpad.com/1088073105-kinnporsche-side-story-vegaspete-vegaspete-chapter",
+          "https://sevenseasentertainment.com/books/kinnporsche-novel-vol-1/"
         ],
         "fonte_nacionalidade": "https://sevenseasentertainment.com/books/kinnporsche-novel-vol-1/",
-        "criterio_nacionalidade": "Seven Seas confirma que KinnPorsche é romance original tailandês de DAEMI e identifica Kinn/Porsche como núcleo da história. Esta linha contém volumes oficiais e também especiais derivados de VegasPete/KPVP; os EPUBs de Sprite Hoang são creditados à parte e a cópia VegasPete só informa um e-mail no campo de criador, sem autoria bibliográfica verificável.",
+        "criterio_nacionalidade": "O conteúdo identifica Vegas e Pete como protagonistas de uma história derivada do universo tailandês KinnPorsche. O EPUB não identifica autor verificável; o e-mail dos metadados não foi tratado como autoria. DAEMI é creditada pela obra principal, sem atribuição automática desta edição.",
         "epubs_lidos": [
           "14557_VegasPete.epub",
-          "14558_KP VP Special.epub",
-          "14559_KP VP Special 2.epub",
-          "4231_KinnPorsche (Daemi).epub",
-          "55240_KinnPorsche v04 [Seven Seas] [Stick].epub",
-          "61897_VegasPete.epub",
-          "61898_KP VP Special.epub",
-          "61899_KP VP Special 2.epub",
-          "64145_KinnPorsche Vol. 5 - Daemi.epub",
-          "73776_KinnPorsche Vol. 6 [Zaphkiel].epub"
+          "61897_VegasPete.epub"
         ],
         "epubs_nao_lidos": []
       }
@@ -11305,7 +11299,7 @@
     },
     {
       "chave": "obra_00093",
-      "titulo": "eeb0a082b3c914a7296e8993b1a052a9",
+      "titulo": "My Only 12%",
       "titulos_alternativos": [],
       "autores": [
         "saba.esren@gmail.com"
@@ -17266,7 +17260,7 @@
     },
     {
       "chave": "obra_00116",
-      "titulo": "201d7ffd393c42ac9acb995f0c4207b7",
+      "titulo": "The Last Gentleman (终末的绅士)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -29072,8 +29066,8 @@
         "autor": "Da Feng Gua Guo (大风刮过)",
         "nacionalidade_obra": "China",
         "protagonistas": [
-          "Príncipe Huai (怀王)",
-          "Liu Ziqi (刘子祈)"
+          "Cheng Jun (承浚; Prince Huai)",
+          "Liu Tongyi (柳桐倚)"
         ],
         "referencias": [
           "https://www.peachflowerhouse.com/store/p/imperial-uncle",
@@ -73712,7 +73706,7 @@
     },
     {
       "chave": "obra_00705",
-      "titulo": "39550_-",
+      "titulo": "Bat (蝙蝠)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -87654,8 +87648,8 @@
     },
     {
       "chave": "obra_00842",
-      "titulo": "3de35725f84142ebe801f86f6285d7c2",
-      "titulos_alternativos": [],
+      "titulo": "Desire (垂涎)",
+      "titulos_alternativos": ["ABO Desire"],
       "autores": [],
       "arquivos": [
         "45712_Desire-Full-Polished.epub"
@@ -94037,7 +94031,7 @@
     },
     {
       "chave": "obra_00905",
-      "titulo": "a22eae56542a6ed8766ac3539edcf141",
+      "titulo": "Case File Compendium (Bing An Ben)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -95881,7 +95875,7 @@
     },
     {
       "chave": "obra_00919",
-      "titulo": "p1go9gbea312gkaq11r6v1i871n5u4",
+      "titulo": "S.C.I Mystery Series",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -104024,7 +104018,7 @@
     },
     {
       "chave": "obra_00997",
-      "titulo": "be81563e98f67d9a0a0a6faf536ed828",
+      "titulo": "Space: The Gap Between Us",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -108522,7 +108516,7 @@
     },
     {
       "chave": "obra_01055",
-      "titulo": "D:\\wwwroot\\cleverpdf-web\\8094603\\Cutie Pie (1) (2).epub",
+      "titulo": "Cutie Pie",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -108796,7 +108790,7 @@
     },
     {
       "chave": "obra_01058",
-      "titulo": "[ENG] Cutie Pie-BamBam",
+      "titulo": "Cutie Pie",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -109020,7 +109014,7 @@
     },
     {
       "chave": "obra_01061",
-      "titulo": "Niti Man Society and Lover (PT/BR)",
+      "titulo": "NITI man, society and lover",
       "titulos_alternativos": [],
       "autores": [
         "Chmai Jay"
@@ -112848,7 +112842,7 @@
     },
     {
       "chave": "obra_01113",
-      "titulo": "Look at Me  (Novel)",
+      "titulo": "Look at Me",
       "titulos_alternativos": [
         "Look at Me Vol. 1 (Novel)"
       ],
@@ -113059,7 +113053,7 @@
     },
     {
       "chave": "obra_01117",
-      "titulo": "Look at Me  ESP",
+      "titulo": "Look at Me",
       "titulos_alternativos": [
         "Look at Me Vol. 1 ESP",
         "Look at Me Vol. 2 ESP"
@@ -114365,7 +114359,7 @@
     },
     {
       "chave": "obra_01136",
-      "titulo": "GHG",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [],
       "autores": [
         "Shadows019"
@@ -128666,7 +128660,7 @@
     },
     {
       "chave": "obra_01255",
-      "titulo": "D:\\wwwroot\\cleverpdf-web\\8076156\\merged.epub",
+      "titulo": "NITI man, society and lover",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -130221,7 +130215,7 @@
     },
     {
       "chave": "obra_01268",
-      "titulo": "Index: After The Substitution Marriage, I laughed so hard that I wanted to Die",
+      "titulo": "After Substitution Marriage, I Laughed So Hard That I Wanted to Die",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -149075,7 +149069,7 @@
     },
     {
       "chave": "obra_01389",
-      "titulo": "Index: After The Substitution Marriage, I laughed so hard that I wanted to Die",
+      "titulo": "After Substitution Marriage, I Laughed So Hard That I Wanted to Die",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -167154,7 +167148,7 @@
     },
     {
       "chave": "obra_01528",
-      "titulo": "F@rmer B-y in the 3nd of da W##rld",
+      "titulo": "The Farmer Ger in the Apocalypse",
       "titulos_alternativos": [],
       "autores": [
         "JustRead4rever"
@@ -173280,7 +173274,7 @@
     },
     {
       "chave": "obra_01567",
-      "titulo": "Crazy Love Moo Moo eng",
+      "titulo": "Crazy Love Moo Moo",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -214667,9 +214661,12 @@
     },
     {
       "chave": "obra_01775",
-      "titulo": "�ܱ�ץ����òС����_��������_ȫ������Ķ�txt����_����С˵|BLС˵",
-      "titulos_alternativos": [],
-      "autores": [],
+      "titulo": "[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught",
+      "titulos_alternativos": [
+        "【快穿】总被抓的美貌小可怜",
+        "〖快穿〗总被抓的美貌小可怜"
+      ],
+      "autores": ["Shi Yu (是玉)"],
       "arquivos": [
         "80232_raw of (qt The Delicate Little Beauty Keeps Getting Caught).epub"
       ],
@@ -215419,19 +215416,19 @@
       "ids": [
         "80232"
       ],
-      "identificada": false,
-      "nacionalidade_conhecida": false,
-      "tem_link_nu": false,
+      "identificada": true,
+      "nacionalidade_conhecida": true,
+      "tem_link_nu": true,
       "candidatos_serper": 0,
       "verificacao_obra": {
         "autor": "Shi Yu (是玉)",
         "nacionalidade_obra": "China",
         "protagonistas": [
-          "沈玉",
-          "顾琛"
+          "Shen Yu (沈玉)"
         ],
         "referencias": [
-          "https://www.dmxs.org/cycs/23159.html"
+          "https://www.dmxs.org/cycs/23159.html",
+          "https://www.novelupdates.com/series/quick-transmigration-the-delicate-little-beauty-keeps-getting-caught/"
         ],
         "fonte_nacionalidade": "https://www.dmxs.org/cycs/23159.html",
         "criterio_nacionalidade": "O texto do EPUB identifica a autora 是玉 e o casal central 沈玉 e 顾琛; a obra foi publicada originalmente em chinês.",
@@ -219724,7 +219721,7 @@
     },
     {
       "chave": "obra_01814",
-      "titulo": "input",
+      "titulo": "Embrace Gravity",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -219772,7 +219769,7 @@
     },
     {
       "chave": "obra_01815",
-      "titulo": "input",
+      "titulo": "Embrace Gravity",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -221460,9 +221457,12 @@
     },
     {
       "chave": "obra_01843",
-      "titulo": "1.1 Anthology",
-      "titulos_alternativos": [],
-      "autores": [],
+      "titulo": "[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught",
+      "titulos_alternativos": [
+        "【快穿】总被抓的美貌小可怜",
+        "〖快穿〗总被抓的美貌小可怜"
+      ],
+      "autores": ["Shi Yu (是玉)"],
       "arquivos": [
         "81635_Quick_transmigration_the_delicate_little_beauty_gets_caught_again.EPUB"
       ],
@@ -221484,15 +221484,15 @@
       "ids": [
         "81635"
       ],
-      "identificada": false,
-      "nacionalidade_conhecida": false,
-      "tem_link_nu": false,
+      "identificada": true,
+      "nacionalidade_conhecida": true,
+      "tem_link_nu": true,
       "candidatos_serper": 0,
       "verificacao_obra": {
         "autor": "Shi Yu (是玉)",
         "nacionalidade_obra": "China",
         "protagonistas": [
-          "Shen Yu"
+          "Shen Yu (沈玉)"
         ],
         "referencias": [
           "https://www.novelupdates.com/series/quick-transmigration-the-delicate-little-beauty-keeps-getting-caught/"
@@ -232530,7 +232530,7 @@
     },
     {
       "chave": "obra_01926",
-      "titulo": "Chapter 2",
+      "titulo": "Heartbound",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -235827,8 +235827,10 @@
     },
     {
       "chave": "obra_01947",
-      "titulo": "4 6008075621178023763",
-      "titulos_alternativos": [],
+      "titulo": "Even Better",
+      "titulos_alternativos": [
+        "Better"
+      ],
       "autores": [],
       "arquivos": [
         "83728_4_6008075621178023763.epub",
@@ -238049,15 +238051,16 @@
     },
     {
       "chave": "obra_01964",
-      "titulo": "0 and 1",
-      "titulos_alternativos": [],
+      "titulo": "0 and 1 (0과 1)",
+      "titulos_alternativos": ["Zero and One"],
       "autores": [
         "osmo"
       ],
       "arquivos": [
-        "84011_0_and_1 spring of romance_new_cover.epub"
+        "84011_0_and_1 spring of romance_new_cover.epub",
+        "90490_0 and 1.epub"
       ],
-      "quantidade": 1,
+      "quantidade": 2,
       "links": [
         "http://purl.org/dc/elements/1.1/",
         "http://www.daisy.org/z3986/2005/ncx/",
@@ -238324,14 +238327,15 @@
       ],
       "erros": [],
       "ids": [
-        "84011"
+        "84011",
+        "90490"
       ],
       "identificada": false,
       "nacionalidade_conhecida": false,
       "tem_link_nu": false,
       "candidatos_serper": 0,
       "verificacao_obra": {
-        "autor": "Minon (민온)",
+        "autor": "Min On (민온)",
         "nacionalidade_obra": "Coreia do Sul",
         "protagonistas": [
           "Joffrey",
@@ -238606,7 +238610,7 @@
     },
     {
       "chave": "obra_01968",
-      "titulo": "Chapter 2",
+      "titulo": "Heartbound",
       "titulos_alternativos": [],
       "autores": [
         "heart bound"
@@ -248287,7 +248291,7 @@
     },
     {
       "chave": "obra_02000",
-      "titulo": "Sk5m59kcbdk",
+      "titulo": "After Rebirth, The Real Young Master Began to Maintain His Health",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -267544,7 +267548,7 @@
     },
     {
       "chave": "obra_02150",
-      "titulo": "Index: Woke Up Pregnant in Every World [Quick Transmigration]",
+      "titulo": "Woke Up Pregnant in Every World [Quick Transmigration]",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -302952,7 +302956,7 @@
     },
     {
       "chave": "obra_02378",
-      "titulo": "Rebirth of a Star General 272 Generated by BokGen com Z Library",
+      "titulo": "Rebirth of a Star General",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -391430,7 +391434,7 @@
     },
     {
       "chave": "obra_02841",
-      "titulo": "Why Do All My Roommates Look at Me Like This? - Chrysanthemum Garden",
+      "titulo": "Why Do All My Roommates Look at Me Like This?",
       "titulos_alternativos": [
         "Why Do All the Villains Look at Me Like This?"
       ],
@@ -420978,7 +420982,7 @@
     },
     {
       "chave": "obra_03018",
-      "titulo": "191 – Index – I Became a God in a Horror Game",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [
         "I Became a God in a Horror Game"
       ],
@@ -423204,7 +423208,7 @@
     },
     {
       "chave": "obra_03019",
-      "titulo": "GHG",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [
         "I Became a God in a Horror Game"
       ],
@@ -429478,8 +429482,8 @@
     },
     {
       "chave": "obra_00044",
-      "titulo": "556ab60d6ba443cdfd67a1026bd53d31",
-      "titulos_alternativos": [],
+      "titulo": "To Rule in a Turbulent World (乱世为王)",
+      "titulos_alternativos": ["LSWW", "Luanshi Wei Wang"],
       "autores": [
         "GISELLE MAE SIBUG"
       ],
@@ -434172,7 +434176,7 @@
     },
     {
       "chave": "obra_00093",
-      "titulo": "eeb0a082b3c914a7296e8993b1a052a9",
+      "titulo": "My Only 12%",
       "titulos_alternativos": [],
       "autores": [
         "saba.esren@gmail.com"
@@ -440133,7 +440137,7 @@
     },
     {
       "chave": "obra_00116",
-      "titulo": "201d7ffd393c42ac9acb995f0c4207b7",
+      "titulo": "The Last Gentleman (终末的绅士)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -451939,8 +451943,8 @@
         "autor": "Da Feng Gua Guo (大风刮过)",
         "nacionalidade_obra": "China",
         "protagonistas": [
-          "Príncipe Huai (怀王)",
-          "Liu Ziqi (刘子祈)"
+          "Cheng Jun (承浚; Prince Huai)",
+          "Liu Tongyi (柳桐倚)"
         ],
         "referencias": [
           "https://www.peachflowerhouse.com/store/p/imperial-uncle",
@@ -496579,7 +496583,7 @@
     },
     {
       "chave": "obra_00705",
-      "titulo": "39550_-",
+      "titulo": "Bat (蝙蝠)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -510521,8 +510525,8 @@
     },
     {
       "chave": "obra_00842",
-      "titulo": "3de35725f84142ebe801f86f6285d7c2",
-      "titulos_alternativos": [],
+      "titulo": "Desire (垂涎)",
+      "titulos_alternativos": ["ABO Desire"],
       "autores": [],
       "arquivos": [
         "45712_Desire-Full-Polished.epub"
@@ -516904,7 +516908,7 @@
     },
     {
       "chave": "obra_00905",
-      "titulo": "a22eae56542a6ed8766ac3539edcf141",
+      "titulo": "Case File Compendium (Bing An Ben)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -518748,7 +518752,7 @@
     },
     {
       "chave": "obra_00919",
-      "titulo": "p1go9gbea312gkaq11r6v1i871n5u4",
+      "titulo": "S.C.I Mystery Series",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -526891,7 +526895,7 @@
     },
     {
       "chave": "obra_00997",
-      "titulo": "be81563e98f67d9a0a0a6faf536ed828",
+      "titulo": "Space: The Gap Between Us",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -531389,7 +531393,7 @@
     },
     {
       "chave": "obra_01055",
-      "titulo": "D:\\wwwroot\\cleverpdf-web\\8094603\\Cutie Pie (1) (2).epub",
+      "titulo": "Cutie Pie",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -531663,7 +531667,7 @@
     },
     {
       "chave": "obra_01058",
-      "titulo": "[ENG] Cutie Pie-BamBam",
+      "titulo": "Cutie Pie",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -531887,7 +531891,7 @@
     },
     {
       "chave": "obra_01061",
-      "titulo": "Niti Man Society and Lover (PT/BR)",
+      "titulo": "NITI man, society and lover",
       "titulos_alternativos": [],
       "autores": [
         "Chmai Jay"
@@ -535715,7 +535719,7 @@
     },
     {
       "chave": "obra_01113",
-      "titulo": "Look at Me  (Novel)",
+      "titulo": "Look at Me",
       "titulos_alternativos": [
         "Look at Me Vol. 1 (Novel)"
       ],
@@ -535926,7 +535930,7 @@
     },
     {
       "chave": "obra_01117",
-      "titulo": "Look at Me  ESP",
+      "titulo": "Look at Me",
       "titulos_alternativos": [
         "Look at Me Vol. 1 ESP",
         "Look at Me Vol. 2 ESP"
@@ -537232,7 +537236,7 @@
     },
     {
       "chave": "obra_01136",
-      "titulo": "GHG",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [],
       "autores": [
         "Shadows019"
@@ -551533,7 +551537,7 @@
     },
     {
       "chave": "obra_01255",
-      "titulo": "D:\\wwwroot\\cleverpdf-web\\8076156\\merged.epub",
+      "titulo": "NITI man, society and lover",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -553088,7 +553092,7 @@
     },
     {
       "chave": "obra_01268",
-      "titulo": "Index: After The Substitution Marriage, I laughed so hard that I wanted to Die",
+      "titulo": "After Substitution Marriage, I Laughed So Hard That I Wanted to Die",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -571942,7 +571946,7 @@
     },
     {
       "chave": "obra_01389",
-      "titulo": "Index: After The Substitution Marriage, I laughed so hard that I wanted to Die",
+      "titulo": "After Substitution Marriage, I Laughed So Hard That I Wanted to Die",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -590021,7 +590025,7 @@
     },
     {
       "chave": "obra_01528",
-      "titulo": "F@rmer B-y in the 3nd of da W##rld",
+      "titulo": "The Farmer Ger in the Apocalypse",
       "titulos_alternativos": [],
       "autores": [
         "JustRead4rever"
@@ -596147,7 +596151,7 @@
     },
     {
       "chave": "obra_01567",
-      "titulo": "Crazy Love Moo Moo eng",
+      "titulo": "Crazy Love Moo Moo",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -637534,9 +637538,12 @@
     },
     {
       "chave": "obra_01775",
-      "titulo": "�ܱ�ץ����òС����_��������_ȫ������Ķ�txt����_����С˵|BLС˵",
-      "titulos_alternativos": [],
-      "autores": [],
+      "titulo": "[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught",
+      "titulos_alternativos": [
+        "【快穿】总被抓的美貌小可怜",
+        "〖快穿〗总被抓的美貌小可怜"
+      ],
+      "autores": ["Shi Yu (是玉)"],
       "arquivos": [
         "80232_raw of (qt The Delicate Little Beauty Keeps Getting Caught).epub"
       ],
@@ -638286,19 +638293,19 @@
       "ids": [
         "80232"
       ],
-      "identificada": false,
-      "nacionalidade_conhecida": false,
-      "tem_link_nu": false,
+      "identificada": true,
+      "nacionalidade_conhecida": true,
+      "tem_link_nu": true,
       "candidatos_serper": 0,
       "verificacao_obra": {
         "autor": "Shi Yu (是玉)",
         "nacionalidade_obra": "China",
         "protagonistas": [
-          "沈玉",
-          "顾琛"
+          "Shen Yu (沈玉)"
         ],
         "referencias": [
-          "https://www.dmxs.org/cycs/23159.html"
+          "https://www.dmxs.org/cycs/23159.html",
+          "https://www.novelupdates.com/series/quick-transmigration-the-delicate-little-beauty-keeps-getting-caught/"
         ],
         "fonte_nacionalidade": "https://www.dmxs.org/cycs/23159.html",
         "criterio_nacionalidade": "O texto do EPUB identifica a autora 是玉 e o casal central 沈玉 e 顾琛; a obra foi publicada originalmente em chinês.",
@@ -642591,7 +642598,7 @@
     },
     {
       "chave": "obra_01814",
-      "titulo": "input",
+      "titulo": "Embrace Gravity",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -642639,7 +642646,7 @@
     },
     {
       "chave": "obra_01815",
-      "titulo": "input",
+      "titulo": "Embrace Gravity",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -644327,9 +644334,12 @@
     },
     {
       "chave": "obra_01843",
-      "titulo": "1.1 Anthology",
-      "titulos_alternativos": [],
-      "autores": [],
+      "titulo": "[Quick Transmigration] The Delicate Little Beauty Keeps Getting Caught",
+      "titulos_alternativos": [
+        "【快穿】总被抓的美貌小可怜",
+        "〖快穿〗总被抓的美貌小可怜"
+      ],
+      "autores": ["Shi Yu (是玉)"],
       "arquivos": [
         "81635_Quick_transmigration_the_delicate_little_beauty_gets_caught_again.EPUB"
       ],
@@ -644351,15 +644361,15 @@
       "ids": [
         "81635"
       ],
-      "identificada": false,
-      "nacionalidade_conhecida": false,
-      "tem_link_nu": false,
+      "identificada": true,
+      "nacionalidade_conhecida": true,
+      "tem_link_nu": true,
       "candidatos_serper": 0,
       "verificacao_obra": {
         "autor": "Shi Yu (是玉)",
         "nacionalidade_obra": "China",
         "protagonistas": [
-          "Shen Yu"
+          "Shen Yu (沈玉)"
         ],
         "referencias": [
           "https://www.novelupdates.com/series/quick-transmigration-the-delicate-little-beauty-keeps-getting-caught/"
@@ -655397,7 +655407,7 @@
     },
     {
       "chave": "obra_01926",
-      "titulo": "Chapter 2",
+      "titulo": "Heartbound",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -660916,15 +660926,16 @@
     },
     {
       "chave": "obra_01964",
-      "titulo": "0 and 1",
-      "titulos_alternativos": [],
+      "titulo": "0 and 1 (0과 1)",
+      "titulos_alternativos": ["Zero and One"],
       "autores": [
         "osmo"
       ],
       "arquivos": [
-        "84011_0_and_1 spring of romance_new_cover.epub"
+        "84011_0_and_1 spring of romance_new_cover.epub",
+        "90490_0 and 1.epub"
       ],
-      "quantidade": 1,
+      "quantidade": 2,
       "links": [
         "http://purl.org/dc/elements/1.1/",
         "http://www.daisy.org/z3986/2005/ncx/",
@@ -661191,14 +661202,15 @@
       ],
       "erros": [],
       "ids": [
-        "84011"
+        "84011",
+        "90490"
       ],
       "identificada": false,
       "nacionalidade_conhecida": false,
       "tem_link_nu": false,
       "candidatos_serper": 0,
       "verificacao_obra": {
-        "autor": "Minon (민온)",
+        "autor": "Min On (민온)",
         "nacionalidade_obra": "Coreia do Sul",
         "protagonistas": [
           "Joffrey",
@@ -661473,7 +661485,7 @@
     },
     {
       "chave": "obra_01968",
-      "titulo": "Chapter 2",
+      "titulo": "Heartbound",
       "titulos_alternativos": [],
       "autores": [
         "heart bound"
@@ -671154,7 +671166,7 @@
     },
     {
       "chave": "obra_02000",
-      "titulo": "Sk5m59kcbdk",
+      "titulo": "After Rebirth, The Real Young Master Began to Maintain His Health",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -690411,7 +690423,7 @@
     },
     {
       "chave": "obra_02150",
-      "titulo": "Index: Woke Up Pregnant in Every World [Quick Transmigration]",
+      "titulo": "Woke Up Pregnant in Every World [Quick Transmigration]",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -725819,7 +725831,7 @@
     },
     {
       "chave": "obra_02378",
-      "titulo": "Rebirth of a Star General 272 Generated by BokGen com Z Library",
+      "titulo": "Rebirth of a Star General",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -814297,7 +814309,7 @@
     },
     {
       "chave": "obra_02841",
-      "titulo": "Why Do All My Roommates Look at Me Like This? - Chrysanthemum Garden",
+      "titulo": "Why Do All My Roommates Look at Me Like This?",
       "titulos_alternativos": [
         "Why Do All the Villains Look at Me Like This?"
       ],
@@ -843845,7 +843857,7 @@
     },
     {
       "chave": "obra_03018",
-      "titulo": "191 – Index – I Became a God in a Horror Game",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [
         "I Became a God in a Horror Game"
       ],
@@ -846071,7 +846083,7 @@
     },
     {
       "chave": "obra_03019",
-      "titulo": "GHG",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [
         "I Became a God in a Horror Game"
       ],
@@ -852074,7 +852086,7 @@
     },
     {
       "chave": "obra_00093",
-      "titulo": "eeb0a082b3c914a7296e8993b1a052a9",
+      "titulo": "My Only 12%",
       "titulos_alternativos": [],
       "autores": [
         "saba.esren@gmail.com"
@@ -876709,7 +876721,7 @@
     },
     {
       "chave": "obra_00905",
-      "titulo": "a22eae56542a6ed8766ac3539edcf141",
+      "titulo": "Case File Compendium (Bing An Ben)",
       "titulos_alternativos": [],
       "autores": [],
       "arquivos": [
@@ -879238,7 +879250,7 @@
     },
     {
       "chave": "obra_01117",
-      "titulo": "Look at Me  ESP",
+      "titulo": "Look at Me",
       "titulos_alternativos": [
         "Look at Me Vol. 1 ESP",
         "Look at Me Vol. 2 ESP"
@@ -909145,7 +909157,7 @@
     },
     {
       "chave": "obra_03018",
-      "titulo": "191 – Index – I Became a God in a Horror Game",
+      "titulo": "I Became a God in a Horror Game",
       "titulos_alternativos": [
         "I Became a God in a Horror Game"
       ],
